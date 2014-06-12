@@ -1,0 +1,8 @@
+#ifndef JSONP_CONFIG_H
+#define JSONP_CONFIG_H
+
+#define JSONP_SIZE_MAX (size_t)-1
+#define JSONP_PATH_SEPERATOR '/'
+#define JSONP_PATH_SIZE_MAX 4096
+
+#endif /*JSONP_CONFIG_H*/

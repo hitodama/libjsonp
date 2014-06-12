@@ -1,0 +1,10 @@
+Create JSON-RPC like test file and tester
+
+{
+	"jsonrpc": "2.0", /* does not matter */
+	"method": "merge", /* test name */
+	"params": [{}, {}], /* test args */
+	"id": null, /* does not matter, test id? */
+	"result": {}, /* test cmp */
+	"error": {"code": -1, "message": "Could not merge"} /* test fail, to print */
+}
