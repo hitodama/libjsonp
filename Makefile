@@ -1,27 +1,31 @@
 # FLAGS and PROGS
 
-CC = /bin/gcc
-STRIP = /bin/strip
+CC = gcc
+LD = ld
+STRIP = strip
 STRIPFLAGS = --strip-unneeded
-FLAGS = -O2 #-D _DEBUG
-CFLAGS = -fPIC -g -Wall -Iinclude -fvisibility=hidden
+FLAGS = -std=c99 -O2 #-D _DEBUG
+DFLAGS = -O0 -D _DEBUG
+CFLAGS = -fPIC -g -Wall -Iinclude -fvisibility=hidden 
 LDFLAGS = -ljansson
-LDSOFLAGS = -ljansson -shared
+LDSOFLAGS = $(LDFLAGS) -shared
 
 # DIRS
 
 SRCIN = src
 SRCBININ = $(SRCIN)/bin
-SRCTESTIN = $(SRCIN)/bin
+SRCTESTIN = $(SRCIN)/test
 
 INCIN = include
 
 OUT = out
 LIBOUT = $(OUT)/lib
-BINOUT= $(OUT)/bin
+BINOUT = $(OUT)/bin
+TESTOUT = $(OUT)/test
 INCOUT = $(OUT)/include
 OBJOUT = $(OUT)/obj
 OBJBINOUT = $(OBJOUT)/bin
+OBJTESTOUT = $(OBJOUT)/test
 
 # FILES
 
@@ -29,48 +33,72 @@ HEADERS_ = $(INCIN)/jansson_extension.h $(INCIN)/libjsonp.h $(INCIN)/libjsonpp.h
 HEADERS = $(patsubst $(INCIN)/%,$(INCOUT)/%,$(HEADERS_))
 
 SOURCES = $(wildcard $(SRCIN)/*.c)
-BINSOURCES = $(wildcard $(SRCBININ)/*.c)
-
 OBJECTS_ = $(patsubst $(SRCIN)/%,$(OBJOUT)/%,$(SOURCES))
 OBJECTS = $(OBJECTS_:.c=.o)
+
+BINSOURCES = $(wildcard $(SRCBININ)/*.c)
 BINOBJECTS_ = $(patsubst $(SRCBININ)/%,$(OBJBINOUT)/%,$(BINSOURCES))
 BINOBJECTS = $(BINOBJECTS_:.c=.o)
+
+TESTSOURCES = $(wildcard $(SRCTESTIN)/*.c)
+TESTOBJECTS_ = $(patsubst $(SRCTESTIN)/%,$(OBJTESTOUT)/%,$(TESTSOURCES))
+TESTOBJECTS = $(TESTOBJECTS_:.c=.o)
 
 # TARGET FILES
 
 LIBTARGET = libjsonp.so
 BINTARGET = jsonp
+TESTTARGET = jsonp_test
 
 # RULES
 
-all: $(LIBTARGET) $(BINTARGET)
+all: mkout $(LIBOUT)/$(LIBTARGET) $(BINOUT)/$(BINTARGET) 
 
 $(OBJOUT)/%.o: $(SRCIN)/%.c
 	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(STRIP) $(STRIPFLAGS) $@
 
 $(OBJBINOUT)/%.o: $(SRCBININ)/%.c
 	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(STRIP) $(STRIPFLAGS) $@
 
-$(OBJOUT)/%.o: $(SRCIN)/%.c
+$(OBJTESTOUT)/%.o: $(SRCTESTIN)/%.c
 	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(STRIP) $(STRIPFLAGS) $@
 
-$(LIBTARGET): $(OBJECTS) $(HEADERS)
-	$(STRIP) $(STRIPFLAGS) $(OBJECTS)
+$(LIBOUT)/$(LIBTARGET): $(OBJECTS) $(HEADERS)
 	$(CC) $(FLAGS) $(CFLAGS) $(LDSOFLAGS) -o $(LIBOUT)/$(LIBTARGET) $(OBJECTS)
+	#$(STRIP) $(STRIPFLAGS) $(LIBOUT)/$(LIBTARGET)
 
-$(BINTARGET): $(OBJECTS) $(BINOBJECTS)
-	$(STRIP) $(STRIPFLAGS) $(OBJECTS)
-	$(STRIP) $(STRIPFLAGS) $(BINOBJECTS)
+$(BINOUT)/$(BINTARGET): $(OBJECTS) $(BINOBJECTS)
 	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -o $(BINOUT)/$(BINTARGET) $(OBJECTS) $(BINOBJECTS)
+
+$(TESTOUT)/$(TESTTARGET): $(OBJECTS) $(TESTOBJECTS)
+	$(CC) $(DFLAGS) $(CFLAGS) $(LDFLAGS) -o $(TESTOUT)/$(TESTTARGET) $(OBJECTS) $(TESTOBJECTS)
 
 $(INCOUT)/%.h: $(INCIN)/%.h
 	cp $< $@
 
-.PHONY: clean
+.PHONY: clean mkout test install
+
+install:
+	@echo "Sorry Makefiles are little beyond me. Please contribute a more elaborate build system!"
+
+uninstall:
+	@echo "Sorry Makefiles are little beyond me. Please contribute a more elaborate build system!"
+
+test: mkout $(TESTOUT)/$(TESTTARGET)
+	$(TESTOUT)/$(TESTTARGET)
+
+mkout:
+	mkdir -p $(OUT)
+	mkdir -p $(BINOUT)
+	mkdir -p $(TESTOUT)
+	mkdir -p $(INCOUT)
+	mkdir -p $(OBJOUT)
+	mkdir -p $(LIBOUT)
+	mkdir -p $(OBJBINOUT)
+	mkdir -p $(OBJTESTOUT)
 
 clean:
-	rm -f $(LIBOUT)/$(LIBTARGET)
-	rm -f $(BINOUT)/$(BINTARGET)
-	rm -f $(HEADERS)
-	rm -f $(OBJECTS)
-	rm -f $(BINOBJECTS)
+	$(RM) -dfr $(OUT)

@@ -209,6 +209,8 @@ int json_clear(json_t *json)
 		return json_object_clear(json);
 	else if(json_is_array(json))
 		return json_array_clear(json);
+	else if(json_is_string(json))
+		return json_string_set(json, "");
 
 	return -1;
 }
@@ -250,6 +252,12 @@ size_t json_size(const json_t *json)
 		return json_object_size(json);
 	else if(json_is_array(json))
 		return json_array_size(json);
+	else if(json_is_string(json))
+	{
+		const char *c = json_string_value(json);
+		if(c != NULL)
+			return strlen(c);
+	}
 
 	return 0;
 }

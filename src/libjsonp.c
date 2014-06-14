@@ -2,8 +2,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <jansson.h>
-
 #include "libjsonp.h"
 #include "jansson_extension.h"
 #include "libjsonp_helper.h"

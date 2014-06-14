@@ -1,0 +1,18 @@
+[
+{
+	"jsonrpc": "2.0", /* does not matter */
+	"method": "merge", /* test name */
+	"params": [{}, {}], /* test args */
+	"id": 1, /* does not matter, test id? */
+	"result": {}, /* test cmp */
+	"error": {"code": -1, "message": "Could not merge"} /* test fail, to print */
+},
+{
+	"jsonrpc": "2.0", /* does not matter */
+	"method": "merge", /* test name */
+	"params": [{}, {}], /* test args */
+	"id": 1, /* does not matter, test id? */
+	"result": {}, /* test cmp */
+	"error": {"code": -1, "message": "Could not merge"} /* test fail, to print */
+}
+]

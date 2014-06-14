@@ -5,37 +5,6 @@
 #include "libjsonp_helper.h"
 #include "libjsonp_config.h"
 
-/*
-void memprint(void *m, size_t n)
-{
-	size_t i;
-	unsigned char *mem = m;
-
-	for (i = 0; i < n; ++i)
-		printf("%02i ", i);
-	printf("\n");
-	for (i = 0; i < n; ++i)
-		printf("%02c ",  isprint(mem[i]) ? mem[i] : ' ');
-	printf("\n");
-	for (i = 0; i < n; ++i)
-		printf("%02x ", mem[i]);
-	printf("\n");
-	for (i = 0; i < n; ++i)
-		printf("---");
-	printf("\n");
-	fflush(stdout);
-}
-
-void memrnd(void *m, unsigned char s, unsigned char e, size_t n)
-{
-	unsigned char *mem = m;
-	srandom(time(NULL));
-	size_t i;
-	for(i = 0; i < n; ++i)
-		mem[i] = (char)(random() % (e - s + 1)) + s;
-}
-*/
-
 size_t jsonp_memcnt(void *m, int c, size_t n)
 {
 	size_t i;
@@ -94,15 +63,9 @@ void jsonp_memmemmemi(void *m, size_t memn, const void *n, size_t neen, const vo
 
 size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn)
 {
-	size_t l = jsonp_strnlen(haystack, hn);
-	jsonp_memmemmemi(haystack, l, needle, jsonp_strnlen(needle, nn), replace, jsonp_strnlen(replace, rn));
-	jsonp_memsh(haystack, 0, l);
-	return l - jsonp_memcnt(haystack, 0, l);
-}
-
-size_t jsonp_strirep(char *haystack, const char *needle, const char *replace)
-{
-	return jsonp_strnirep(haystack, JSONP_SIZE_MAX, needle, JSONP_SIZE_MAX, replace, JSONP_SIZE_MAX);
+	jsonp_memmemmemi(haystack, hn, needle, nn, replace, rn);
+	jsonp_memsh(haystack, 0, hn);
+	return hn - jsonp_memcnt(haystack, 0, hn);
 }
 
 int jsonp_strtozu(size_t *value, const char *s) /*, char **e, int base)*/

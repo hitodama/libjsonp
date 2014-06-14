@@ -1,2 +1,24 @@
 libjsonp
 ========
+
+== Todo
+
+.Finish documenting headers
+[NOTE]
+libjsonp.h, libjsonpp.h missing, (spellcheck ...)
+
+.Need Tests
+[NOTE]
+Need to write tests. Currently dummy bin.
+
+.Check binary
+[NOTE]
+Need to check the binary (get segfaults on / and empty obj, probably simple dump check). Also comment and enhance (use getopt? no mit, no std ...)
+
+.Need README after done
+[NOTE]
+Replace me when done :)
+
+.Better build system
+[WARNING]
+Need a better makefile, build system (help welcome)
