@@ -16,7 +16,7 @@ Need to check the binary (get segfaults on / and empty obj, probably simple dump
 
 .Need README after done
 [NOTE]
-Replace me when done :)
+Replace me when done ...
 
 .Better build system
 [WARNING]
