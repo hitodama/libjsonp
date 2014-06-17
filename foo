@@ -1,6 +1,0 @@
-{
-	"arguments":["verb", "path", "value"],
-	"options":["i", "o"],
-	"switches":["pp"],
-	"required":["verb", "path"]
-}
