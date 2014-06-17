@@ -4,190 +4,166 @@
 
 #include <jansson.h>
 
-#include "libjsonp_helper.h"
-#include "libjsonp_config.h"
-
+#include "jansson_extension.h"
 #include "libjsonpp.h"
 #include "libjsonp.h"
 
-#define KS
+#include "libjsonp_helper.h"
+#include "libjsonp_config.h"
+
+#include "jsonp_options.h"
+
+static const char *jsonp_main_options = 
+	"{\
+		\"arguments\":[\"verb\", \"path\", \"value\"],\
+		\"options\":[\"i\", \"o\"],\
+		\"switches\":[\"pp\"],\
+		\"required\":[\"verb\", \"path\"]\
+	}";
+
+json_t *jsonp_prepare_options(int argc, char **argv)
+{
+	size_t i;
+	json_t *r;
+	json_t *args = json_array();
+
+	for(i = 1; i < argc; ++i)
+		json_set_new(args, NULL, json_string(argv[i]));
+
+	json_t *opt = json_loads(jsonp_main_options, 0, NULL);
+
+	r = jsonp_options(args, opt);
+
+	json_decref(args);
+	json_decref(opt);
+
+	return r;
+}
 
 int main(int argc, char **argv)
 {
-	int i;
 	json_t *json;
 	json_error_t error;
+
 	FILE *inFile = stdin;
 	FILE *outFile = stdout;
 
-	int pp = -1;
-	int in[] = {-1, -1};
-	int out[] = {-1, -1};
+	const char *verb;
+	const char *path;
 
-	int verb = -1;
-	int path = -1;
-	int value = -1;
+	json_t *args = jsonp_prepare_options(argc, argv);
 
-	int v = -1;
-	json_t *jsonv = NULL;
+	json_t *verb_ = jsonpp_get(args, "/arguments/verb");
+	json_t *path_ = jsonpp_get(args, "/arguments/path");
+	json_t *value = jsonpp_get(args, "/arguments/value");
 
-	for(i = 1; i < argc; ++i)
+	json_t *in = jsonpp_get(args, "/options/i");
+	json_t *out = jsonpp_get(args, "/options/o");
+	json_t *pp = jsonpp_get(args, "/switches/pp");
+
+	if(verb_ == NULL || !json_is_string(verb_))
 	{
-		if(strncmp(argv[i], "-pp", 4) == 0)
-			pp = i;
-		else if(strncmp(argv[i], "-i", 2) == 0)
-		{
-			size_t l = jsonp_strnlen(argv[i], JSONP_PATH_SIZE_MAX);
-			in[0] = i;
-			if(l == 2)
-				in[1] = i + 1;
-			else if(l < JSONP_PATH_SIZE_MAX)
-				in[1] = i;
-			else
-			{
-				fprintf(stderr, "Could not set IN! Path too long (> %i)?\n", JSONP_PATH_SIZE_MAX);
-				return EXIT_FAILURE;
-			}
-			++i;
-		}
-		else if(strncmp(argv[i], "-o", 2) == 0)
-		{
-			size_t l = jsonp_strnlen(argv[i], JSONP_PATH_SIZE_MAX);
-			out[0] = i;
-			if(l == 2)
-				out[1] = i + 1;
-			else if(l < JSONP_PATH_SIZE_MAX)
-				out[1] = i;
-			else
-			{
-				fprintf(stderr, "Could not set OUT! Path too long (> %i)?\n", JSONP_PATH_SIZE_MAX);
-				return EXIT_FAILURE;
-			}
-			++i;
-		}
+		fprintf(stderr, "Verb defined wrong!\n");
+		return EXIT_FAILURE;
 	}
-
-	if(out[1] >= argc || in[1] >= argc)
+	if(path_ == NULL || !json_is_string(path_))
 	{
-		fprintf(stderr, "Missing Path at the end\n");
+		fprintf(stderr, "Path defined wrong!\n");
 		return EXIT_FAILURE;
 	}
 
-	for(i = 1; i < argc; ++i)
-		if(i != pp && i != in[0] && i != in[1] && i != out[0] && i != out[1])
-		{
-			if(verb == -1)
-				verb = i;
-			else if(path == -1)
-				path = i;
-			else
-				value = i;
-
-		}
-
-	if(verb == -1)
+	if(in != NULL && !json_is_string(in))
 	{
-		fprintf(stderr, "Verb not defined! \n");
+		fprintf(stderr, "In defined wrong!\n");
+		return EXIT_FAILURE;	
+	}
+	if(out != NULL && !json_is_string(out))
+	{
+		fprintf(stderr, "Out defined wrong!\n");
 		return EXIT_FAILURE;
 	}
 
-	if(path == -1)
+	if(in)
 	{
-		fprintf(stderr, "Path not defined! \n");
-		return EXIT_FAILURE;
-	}
-
-	if(in[1] >= 0)
-	{
-		inFile = fopen(argv[in[1]] + (in[0] == in[1] ? 2 : 0), "rb");
+		inFile = fopen(json_string_value(in), "rb");
 		if(inFile == NULL)
-			fprintf(stderr, "IN file does not exist!\n");
+		{
+			fprintf(stderr, "Input file could not be opened!\n");
+			return EXIT_FAILURE;
+		}
 	}
-	if(out[1] >= 0)
-		outFile = fopen(argv[out[1]] + (out[0] == out[1] ? 2 : 0), "wb");
 
-	if(strncmp(argv[verb], "create", 7) == 0)// && value != -1)
-		v = 0;
-	else if(strncmp(argv[verb], "get", 4) == 0)
-		v = 1;
-	else if(strncmp(argv[verb], "set", 4) == 0)// && value != -1)
-		v = 2;
-	else if(strncmp(argv[verb], "delete", 7) == 0)
-		v = 3;
-	else
+	if(out)
 	{
-		fprintf(stderr, "Verb not accepted or value missing!\n");
-		return EXIT_FAILURE;
+		outFile = fopen(json_string_value(out), "wb");
+		if(outFile == NULL)
+		{
+			fprintf(stderr, "Output file could not be opened!\n");
+			if(inFile != stdin)
+				fclose(inFile);
+			return EXIT_FAILURE;
+		}
 	}
+
+printf("%i\n", json_typeof(value));
+
+	verb = json_string_value(verb_);
+	path = json_string_value(path_);
 
 	json = json_loadf(inFile, JSON_DECODE_ANY, &error);
 	if(!json)
 	{
+		 fprintf(stderr, "Could not read from input!\n");
 		 fprintf(stderr, "%s\n", error.text);
 		 return EXIT_FAILURE;
 	}
 
-	if(value != -1)
+	if(pp)
 	{
-		jsonv = json_loads(argv[value], JSON_DECODE_ANY, &error);
-		if(!jsonv)
+		if(strcmp(verb, "create") == 0 && value != NULL)
+			jsonpp_create(json, path, value);
+		else if(strcmp(verb, "get") == 0)
+			json = jsonpp_get(json, path);
+		else if(strcmp(verb, "set") == 0 && value != NULL)
+			jsonpp_set(json, path, value);
+		else if(strcmp(verb, "delete") == 0)
+			jsonpp_delete(json, path);
+		else
 		{
-			 fprintf(stderr, "%s\n", error.text);
-			 return EXIT_FAILURE;
-		}
-	}
-
-	if(pp >= 0)
-	{
-		// if(verb >= 0)
-		// 	printf("> %i %s\n", verb, argv[verb]);
-		// if(path >= 0)
-		// 	printf("> %i %s\n", path, argv[path]);
-		switch(v)
-		{
-			case 0: /*create*/
-				jsonpp_create(json, argv[path], jsonv);
-				break;
-			case 1: /*get*/
-				json = jsonpp_get(json, argv[path]);
-				break;
-			case 2: /*set*/
-				jsonpp_set(json, argv[path], jsonv);
-				break;
-			case 3: /*delete*/
-				jsonpp_delete(json, argv[path]);
-				break;
+			fprintf(stderr, "Verb not accepted or value missing!\n");
+			return EXIT_FAILURE;
 		}
 	}
 	else
 	{
-		// if(verb >= 0)
-		// 	printf(">> %i %s\n", verb, argv[verb]);
-		// if(path >= 0)
-		// 	printf(">> %i %s\n", path, argv[path]);
-		switch(v)
+		if(strcmp(verb, "create") == 0 && value != NULL)
+			jsonp_create(json, path, value);
+		else if(strcmp(verb, "get") == 0)
+			json = jsonp_get(json, path);
+		else if(strcmp(verb, "set") == 0 && value != NULL)
+			jsonp_set(json, path, value);
+		else if(strcmp(verb, "delete") == 0)
+			jsonp_delete(json, path);
+		else
 		{
-			case 0: /*create*/
-				jsonp_create(json, argv[path], jsonv);
-				break;
-			case 1: /*get*/
-				json = jsonp_get(json, argv[path]);
-				break;
-			case 2: /*set*/
-				jsonp_set(json, argv[path], jsonv);
-				break;
-			case 3: /*delete*/
-				jsonp_delete(json, argv[path]);
-				break;
+			fprintf(stderr, "Verb not accepted or value missing!\n");
+			return EXIT_FAILURE;
 		}
 	}
-
-
-	if(json_dumpf(json, outFile, JSON_ENCODE_ANY) != 0)
+	
+	if(json == NULL || json_dumpf(json, outFile, JSON_ENCODE_ANY) != 0)
 	{
-		fprintf(stderr, "Could not write to stdout!\n");
+		fprintf(stderr, "Could not write to output!\n");
 		return EXIT_FAILURE;
 	}
+
+	if(inFile != stdin)
+		fclose(inFile);
+
+	if(outFile != stdout)
+		fclose(outFile);
+
+	json_decref(args);
 
 	return EXIT_SUCCESS;
 }

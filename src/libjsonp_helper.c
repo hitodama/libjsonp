@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <math.h>
 
 #include "libjsonp_helper.h"
 #include "libjsonp_config.h"
@@ -36,7 +37,10 @@ void jsonp_memsh(void *m, int c, size_t n)
 	}
 }
 
-void jsonp_memmemmemi(void *m, size_t memn, const void *n, size_t neen, const void *r, size_t repn)
+/*
+Replaces n in m with r. M having the size mn, n the size nn and r the size rn.
+*/
+void jsonp_memmemmemi(void *m, size_t mn, const void *n, size_t nn, const void *r, size_t rn)
 {
 	size_t i;
 	size_t j;
@@ -44,16 +48,16 @@ void jsonp_memmemmemi(void *m, size_t memn, const void *n, size_t neen, const vo
 	const unsigned char *nee = n;
 	const unsigned char *rep = r;
 	
-	if(repn > neen)
+	if(rn > nn)
 		return;
 
-	for(i = 0; i < memn; ++i)
+	for(i = 0; i < mn; ++i)
 	{
-		for(j = 0; i + j < memn && j < neen && mem[i + j] == nee[j]; ++j);
-		if(j == neen)
-			for(j= 0; j < neen; ++j)
+		for(j = 0; i + j < mn && j < nn && mem[i + j] == nee[j]; ++j);
+		if(j == nn)
+			for(j= 0; j < nn; ++j)
 			{
-				if(j < repn)
+				if(j < rn)
 					mem[i + j] = rep[j];
 				else
 					mem[i + j] = 0x00;
@@ -83,6 +87,7 @@ int jsonp_strtozu(size_t *value, const char *s) /*, char **e, int base)*/
 	return sign;
 }
 
+/*
 size_t jsonp_zudigits(size_t number)
 {
 	size_t c;
@@ -90,6 +95,12 @@ size_t jsonp_zudigits(size_t number)
 		return 1;
 	for(c = 0; number != 0; number /= 10, ++c);
 	return c;
+}
+*/
+
+size_t jsonp_digits(size_t size)
+{
+	return ceil(size * log10(2)) + 1;
 }
 
 size_t jsonp_strnlen(const char *s, size_t n)
@@ -113,6 +124,12 @@ char *jsonp_strndup(const char *s, size_t n)
 	return r;
 }
 
+/*
+Returns 1 if s is an integer (of any size), 0 otherwise.
+The string is only checked for the first n characters.
+
+@see jsonp_isint
+*/
 int jsonp_isnint(const char *s, size_t n)
 {
 	size_t i = 0;
@@ -129,5 +146,5 @@ int jsonp_isnint(const char *s, size_t n)
 
 int jsonp_isint(const char *s)
 {
-	return jsonp_isnint(s, JSONP_SIZE_MAX);
+	return jsonp_isnint(s, JSONP_PATH_SIZE_MAX);
 }

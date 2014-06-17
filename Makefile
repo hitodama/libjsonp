@@ -1,13 +1,13 @@
 # FLAGS and PROGS
 
-CC = gcc
+CC = clang #cc
 LD = ld
 STRIP = strip
 STRIPFLAGS = --strip-unneeded
 FLAGS = -std=c99 -O2 #-D _DEBUG
 DFLAGS = -O0 -D _DEBUG
 CFLAGS = -fPIC -g -Wall -Iinclude -fvisibility=hidden 
-LDFLAGS = -ljansson
+LDFLAGS = -ljansson -lm
 LDSOFLAGS = $(LDFLAGS) -shared
 
 # DIRS
@@ -55,15 +55,15 @@ TESTTARGET = jsonp_test
 all: mkout $(LIBOUT)/$(LIBTARGET) $(BINOUT)/$(BINTARGET) 
 
 $(OBJOUT)/%.o: $(SRCIN)/%.c
-	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(CC) $(FLAGS) $(CFLAGS) -c $< -o $@
 	$(STRIP) $(STRIPFLAGS) $@
 
 $(OBJBINOUT)/%.o: $(SRCBININ)/%.c
-	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(CC) $(FLAGS) $(CFLAGS) -c $< -o $@
 	$(STRIP) $(STRIPFLAGS) $@
 
 $(OBJTESTOUT)/%.o: $(SRCTESTIN)/%.c
-	$(CC) $(FLAGS) $(CFLAGS) $(LDFLAGS) -c $< -o $@
+	$(CC) $(FLAGS) $(CFLAGS) -c $< -o $@
 	$(STRIP) $(STRIPFLAGS) $@
 
 $(LIBOUT)/$(LIBTARGET): $(OBJECTS) $(HEADERS)

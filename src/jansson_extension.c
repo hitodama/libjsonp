@@ -8,6 +8,9 @@
 
 #define JSON_FORMAT_STRING(x) "%" x
 
+const static char *json_type_strings[] = {"object", "array", "string",
+	"integer", "real", "true", "false", "null"};
+
 size_t json_ref(json_t *json)
 {
 	return json->refcount;
@@ -38,99 +41,261 @@ json_t *json_oftype(json_type type)
 	}
 }
 
-JSON_INLINE int json_replace(json_t *json, json_t *value)
+json_type json_primitive_type(const char *str)
 {
-	json_type type;
-	json_type vtype;
-	json_type vtype2;
-	size_t l = 0;
+	size_t i = 0;
+	int justnumbers = 1;
+	int dots = 0;
+
+	if(str == NULL)
+		return JSON_NULL;
+
+	if(*str != '\0' && (*str == '-' || *str == '+'))
+		i = 1;
+
+	for(; str[i] != '\0'; ++i)
+	{
+		if(str[i] < '0' || str[i] > '9')
+			justnumbers = 0;
+		if(str[i] == '.')
+			++dots;
+	}
+
+	if(justnumbers)
+	{
+		if(dots == 0)
+			return JSON_INTEGER;
+		else if(dots == 1)
+			return JSON_REAL;
+	}
+	else
+	{
+		if (strcmp(str, json_type_strings[JSON_FALSE]) == 0)
+			return JSON_FALSE;
+		if (strcmp(str, json_type_strings[JSON_TRUE]) == 0)
+			return JSON_TRUE;
+		if (strcmp(str, json_type_strings[JSON_NULL]) == 0)
+			return JSON_NULL;
+	}
+
+
+	json_t *r = json_loads(str, JSON_DECODE_ANY, NULL);
+	if(r != NULL)
+	{
+		json_type t = json_typeof(r);
+		json_decref(r);
+		return t;
+	}
+
+	return JSON_STRING;
+}
+
+json_t *json_primitive(const char *str)
+{
+	json_t *r = NULL;
+	json_type t = json_primitive_type(str);
+
+	if(str == NULL)
+		return r;
+
+	switch(t)
+	{
+		case JSON_STRING:
+			r = json_string(str);
+			break;
+		case JSON_INTEGER:
+			{
+				json_int_t t = 0;
+				if(sscanf(str, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), &t) > 0)
+					r = json_integer(t);
+			}
+			break;
+		case JSON_REAL:
+			{
+				double t = 0;
+				if(sscanf(str, "%lf", &t) > 0)
+					r = json_real(t);
+			}
+			break;
+		case JSON_FALSE:
+			r = json_false();
+			break;
+		case JSON_TRUE:
+			r = json_true();
+			break;
+		case JSON_NULL:
+			r = json_null();
+			break;
+
+		default:
+			r = json_loads(str, JSON_DECODE_ANY, NULL);
+	}
+
+	return r;
+}
+
+json_type json_type_from_string(const char *str)
+{
+	if(str == NULL)
+		return 0;
+	size_t i;
+	for(i = 0; i < sizeof(json_type_strings); ++i)
+		if(strcmp(str, json_type_strings[i]) == 0)
+			return (json_type)i;
+	return 0;
+}
+
+const char *json_type_to_string(json_type type)
+{
+	return json_type_strings[type];
+}
+
+json_t *json_object_zip(json_t *keys, json_t *values)
+{
+	size_t key;
+	json_t *value;
+	json_t *r;
+
+	if(!json_is_array(keys))
+		return NULL;
+	if(values != NULL && !json_is_array(values))
+		return NULL;
+
+	r = json_object();
+	json_array_foreach(keys, key, value)
+	{
+		char * tk = json_value_copy(value);
+		json_t *v = NULL;
+		if(values != NULL)
+			v = json_array_get(values, key);
+
+		if(tk != NULL && v != NULL)
+			json_set(r, tk, v);
+		else if(tk != NULL)
+			json_set(r, tk, json_null());
+
+		free((void *)tk);
+	}
+	return r;
+}
+
+json_t *json_object_unzip(json_t *json)
+{
+	const char *key;
+	json_t *value;
+	json_t *r;
+	json_t *k;
+	json_t *v;
+
+	if(!json_is_object(json))
+		return NULL;
+
+	r = json_object();
+	k = json_array();
+	json_set_new(r, "keys", k);
+	v = json_array();
+	json_set_new(r, "values", v);
+
+	json_object_foreach(json, key, value)
+	{
+		json_set_new(k, NULL, json_string(key));
+		json_set(v, NULL, value);
+	}
+
+	return r;
+}
+
+json_foreach_iteration json_inverter(const char *key, json_t *val, void *mem)
+{
+	json_t *r = (json_t *)mem;
+
+	char *v = json_value_copy(val);
+	if(v == NULL)
+		return json_foreach_break;
+
+	json_set_new(r, v, json_primitive(key));
+
+	free((void *)v);
+
+	return json_foreach_continue;
+}
+
+json_t *json_invert(json_t *json)
+{
+	json_t *r = json_object();
+	json_foreach(json, json_inverter, (void *)r);
+	return r;
+}
+
+int json_value_set(json_t *json, const char *value)
+{
 	int r = -1;
 
 	if(json == NULL || value == NULL)
-		return -1;
+		return r;
 
-	type = json_typeof(json);
-	vtype = json_typeof(value);
-
-	char *s = json_dumps(value, JSON_ENCODE_ANY);
-	if(s != NULL)
+	if(json_is_string(json))
+		r = json_string_set(json, value);
+	else if(json_is_integer(json))
 	{
-		l = strlen(s);
-		if(l >= 2 && s[0] == '\"' && s[l - 1] == '\"')
-		{
-			s[0] = ' ';
-			s[l - 1] = ' ';
-		}
+		json_int_t t = 0;
+		if(sscanf(value, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), &t) > 0)
+			r = json_integer_set(json, t);
 	}
-	json_t *v = json_loads(s, JSON_DECODE_ANY, NULL);
-
-	vtype2 = json_typeof(v);
-
-	switch(type)
+	else if(json_is_real(json))
 	{
-		case JSON_OBJECT:
-		case JSON_ARRAY:
-		{
-			if(type == vtype)
-			{
-				r = json_clear(json);
-				if(r >= 0)
-					r = json_merge(json, value);
-			}
-			break;
-		}
+		double t = 0;
+		if(sscanf(value, "%lf", &t) > 0)
+			r = json_real_set(json, t);
+	}
+
+	return r;
+}
+
+char *json_value_copy(json_t *json)
+{
+	char *r = NULL;
+	json_type t = json_typeof(json);
+
+	if(json == NULL)
+		return r;
+
+	switch(t)
+	{
 		case JSON_STRING:
-		{
-			r = json_string_set(json, s);
+			{
+				const char *t = json_string_value(json);
+				if(t != NULL)
+					r = jsonp_strndup(t, JSONP_SIZE_MAX);
+			}
 			break;
-		}
 		case JSON_INTEGER:
-		{
-			if(vtype2 == JSON_INTEGER)
 			{
-				json_int_t t = 0;
-				r = sscanf(s, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), &t);
-				if(r > 0)
-					r = json_integer_set(json, t);
-			}
-			if(vtype2 == JSON_REAL)
-			{
-				double t;
-				r = sscanf(s, "%lf", &t);
-				if(r > 0)
-					r = json_integer_set(json, (json_int_t)t);
+				json_int_t t = json_integer_value(json);
+				r = malloc(sizeof(char) * (jsonp_digits(sizeof(json_int_t)) + 1));
+				if(r != NULL)
+					sprintf(r, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), t);
 			}
 			break;
-		}
 		case JSON_REAL:
-		{
-			if(vtype2 == JSON_INTEGER)
 			{
-				json_int_t t = 0;
-				r = sscanf(s, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), &t);
-				if(r > 0)
-					r = json_real_set(json, (double)t);
-			}
-			if(vtype2 == JSON_REAL)
-			{
-				double t;
-				r = sscanf(s, "%lf", &t);
-				if(r > 0)
-					r = json_real_set(json, t);
+				double t = json_real_value(json);
+				r = malloc(sizeof(char) * (jsonp_digits(sizeof(double)) + 1));
+				if(r != NULL)
+					sprintf(r, "%lf", t);
 			}
 			break;
-		}
-		case JSON_TRUE: /*sadly not possible*/
 		case JSON_FALSE:
+		case JSON_TRUE:
 		case JSON_NULL:
+			{
+				r = malloc(sizeof(char) * (strlen(json_type_strings[t]) + 1));
+				strcpy(r, json_type_strings[t]);
+			}
 			break;
 		default:
-			break;
-
+			r = json_dumps(json, JSON_ENCODE_ANY);
 	}
-
-	json_decref(v);
-	free(s);
 
 	return r;
 }
@@ -215,32 +380,39 @@ int json_clear(json_t *json)
 	return -1;
 }
 
-void json_foreach(json_t *json, void (*cb)(json_t *, const char *, json_t *))
+json_foreach_iteration json_foreach(json_t *json, json_foreach_callback cb, void *mem)
 {
 	size_t index;
-	char *key;
+	const char *key;
 	json_t* value;
+	json_foreach_iteration r = json_foreach_continue;
 
 	if(json == NULL || cb == NULL)
-		return;
+		return r;
 
 	if(json_is_object(json))
 	{
 		json_object_foreach(json, key, value)
 		{
-			cb(json, key, value);
+			r = cb(key, value, mem);
+			if(r == json_foreach_break)
+				break;
 		}
 	}
 	else if(json_is_array(json))
 	{
-		key = malloc(sizeof(char) * (jsonp_zudigits(JSONP_SIZE_MAX) + 1)); /*pre define some const?*/
+		key = malloc(sizeof(char) * (jsonp_digits(sizeof(JSONP_SIZE_MAX)) + 1)); /*pre define some const?*/
 		json_array_foreach(json, index, value)
 		{
-			sprintf(key, "%zu", index);
-			cb(json, key, value);
+			sprintf((char *)key, "%zu", index);
+			r = cb(key, value, mem);
+			if(r == json_foreach_break)
+				break;
 		}
-		free(key);
+		free((void *)key);
 	}
+
+	return r;
 }
 
 size_t json_size(const json_t *json)
