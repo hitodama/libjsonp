@@ -41,10 +41,11 @@ json_t *json_oftype(json_type type)
 	}
 }
 
-json_type json_primitive_type(const char *str)
+json_type json_typeofs(const char *str)
 {
 	size_t i = 0;
 	int justnumbers = 1;
+	int numbers = 0;
 	int dots = 0;
 
 	if(str == NULL)
@@ -55,17 +56,20 @@ json_type json_primitive_type(const char *str)
 
 	for(; str[i] != '\0'; ++i)
 	{
-		if(str[i] < '0' || str[i] > '9')
-			justnumbers = 0;
+
 		if(str[i] == '.')
 			++dots;
+		else if(str[i] < '0' || str[i] > '9')
+			justnumbers = 0;
+		else
+			++numbers;
 	}
 
 	if(justnumbers)
 	{
-		if(dots == 0)
+		if(dots == 0 && numbers < jsonp_digits(sizeof(json_int_t)))
 			return JSON_INTEGER;
-		else if(dots == 1)
+		else if(dots == 1 && numbers) /* < jsonp_digits(sizeof(double)))*/
 			return JSON_REAL;
 	}
 	else
@@ -78,22 +82,24 @@ json_type json_primitive_type(const char *str)
 			return JSON_NULL;
 	}
 
-
-	json_t *r = json_loads(str, JSON_DECODE_ANY, NULL);
-	if(r != NULL)
+	if((str[0] == '{' && str[i - 1] == '}') || (str[0] == '[' && str[i - 1] == ']') )
 	{
-		json_type t = json_typeof(r);
-		json_decref(r);
-		return t;
+		json_t *r = json_loads(str, JSON_DECODE_ANY, NULL);
+		if(r != NULL)
+		{
+			json_type t = json_typeof(r);
+			json_decref(r);
+			return t;
+		}
 	}
 
 	return JSON_STRING;
 }
 
-json_t *json_primitive(const char *str)
+json_t *json_ofvalue(const char *str)
 {
 	json_t *r = NULL;
-	json_type t = json_primitive_type(str);
+	json_type t = json_typeofs(str);
 
 	if(str == NULL)
 		return r;
@@ -129,6 +135,7 @@ json_t *json_primitive(const char *str)
 
 		default:
 			r = json_loads(str, JSON_DECODE_ANY, NULL);
+			break;
 	}
 
 	return r;
@@ -213,7 +220,7 @@ json_foreach_iteration json_inverter(const char *key, json_t *val, void *mem)
 	if(v == NULL)
 		return json_foreach_break;
 
-	json_set_new(r, v, json_primitive(key));
+	json_set_new(r, v, json_ofvalue(key));
 
 	free((void *)v);
 
@@ -247,6 +254,13 @@ int json_value_set(json_t *json, const char *value)
 		double t = 0;
 		if(sscanf(value, "%lf", &t) > 0)
 			r = json_real_set(json, t);
+	}
+	else if(json_is_object(json) || json_is_array(json))
+	{
+		json_t *v = json_loads(value, 0, NULL);
+		json_clear(json);
+		json_merge(json, v);
+		json_decref(v);
 	}
 
 	return r;
@@ -294,7 +308,7 @@ char *json_value_copy(json_t *json)
 			}
 			break;
 		default:
-			r = json_dumps(json, JSON_ENCODE_ANY);
+			r = json_dumps(json, 0);
 	}
 
 	return r;
@@ -451,7 +465,7 @@ int json_remove(json_t *json, const char *key)
 	return -1;
 }
 
-int json_merge(json_t *json, json_t *other)
+int json_merge(json_t *json, json_t *other) /*extend cases?*/
 {
 	if(json == NULL || other == NULL)
 		return -1;

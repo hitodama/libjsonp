@@ -40,8 +40,28 @@ Create a default object of the given json_type with a typical neutral value.
 */
 json_t *json_oftype(json_type type);
 
-json_type json_primitive_type(const char *str);
-json_t *json_primitive(const char *str);
+/*
+Identifies the json type of a given string.
+
+@param str JSON type to create an object for.
+@returns Returns an object of the given type.
+*/
+json_type json_typeofs(const char *str);
+
+/*
+Returns a json from a given string.
+
+@param str JSON in string from.
+@returns Returns the JSON contained within str.
+*/
+json_t *json_ofvalue(const char *str);
+
+/*
+Invers an object or array into a new object.
+
+@param json JSON object or array.
+@returns Returns an object containing key and value arrays or NULL.
+*/
 json_t *json_invert(json_t *json);
 
 /*
@@ -99,7 +119,24 @@ Remove the property key (or index) the json object or array.
 */
 int json_remove(json_t *json, const char *key);
 
+/*
+Combines an array of keys and an array of values into a single object.
+The value array may be null or smaller. The key array may also be smaller.
+The result is as one would expect.
+
+@param keys Keys for the new object
+@param values Values for the new object
+@returns Returns the combined JSON object or NULL on error.
+*/
 json_t *json_object_zip(json_t *keys, json_t *values);
+
+/*
+Splits an objects into its keys and values and returns them in a new object.
+The new object contains two arrays. One is stored under "keys", one under "values".
+
+@param json JSON object to be split
+@returns Returns an object container with the keys and values or NULL on error.
+*/
 json_t *json_object_unzip(json_t *json);
 
 /*

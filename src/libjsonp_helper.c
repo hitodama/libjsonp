@@ -100,7 +100,7 @@ size_t jsonp_zudigits(size_t number)
 
 size_t jsonp_digits(size_t size)
 {
-	return ceil(size * log10(2)) + 1;
+	return ceil((8 * size) * log10(2)) + 1;
 }
 
 size_t jsonp_strnlen(const char *s, size_t n)

@@ -24,6 +24,8 @@ void jsonp_passert2(json_t *t, json_t *t2)
 
 void jsonp_passert(json_t *t, char *s2)
 {
+	if(t == NULL)
+		return;
 	char *s = json_dumps(t, JSON_ENCODE_ANY | JSON_COMPACT | JSON_SORT_KEYS);
 	if(strcmp(s, s2) != 0)
 		printf("%s != %s\n", s, s2);
@@ -55,8 +57,8 @@ void jansson_extension_h_merge_object_test()
 	jsonpp_create(c, "/bar/%05baz", NULL);
 	jsonpp_create(d, "/%01bar/-/beng", NULL);
 	jsonpp_create(e, "/%01bar/baz", NULL);
-	jsonpp_create(f, "/%01bar/%02-/", NULL);
-	jsonpp_create(f, "/%01bar/%03-/", NULL);
+	jsonpp_create(f, "/%01bar/%02-", NULL);
+	jsonpp_create(f, "/%01bar/%03-", NULL);
 
 	assert(json_merge(a, b) == 0);
 	assert(json_merge(b, c) == 0);
@@ -117,10 +119,10 @@ void jsonpp_stress_test()
 	const char *pointer1[] = { "/a~1b/fo%25%25/-/hh~0hh//0/ /a~0b", "/a~1b%2f%2f%2f/bar/1334//\\s/0",
 	 "/a~1b/%01foo~2/-/-/joo", "/a~1b/foo~2/0/moo/goo/", "/usr/local/bin/bash",
 	 "/%01/-/a", "/%02zap/67.4", "/%03zap/67.43", "\\foo%25%5f/zip/pi", "/a~1b/%01foo~2/-/uuu",
-	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/zap/68.43" };
+	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/%00zap/68.43" };
 
 	for(i = 0; i < 13; ++i)
-		jsonpp_create(root1, pointer1[i], json_null());
+		jsonpp_create(root1, pointer1[i], NULL);
 	jsonpp_create(root1, pointer1[i++], json_null());
 	jsonpp_create(root1, pointer1[i++], json_null());
 
@@ -134,13 +136,13 @@ void jsonpp_stress_test()
 
 	jsonp_passert(root2, "{\"\":[{\"a\":null}],\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"usr\":{\"local\":{\"bin\":{\"bash\":null}}}}");
 
-	const char *pointer3[] = { "/%02zap/67.4", "/%03zap/67.43", "\\foo%25%5f/zip/pi", "/a~1b/%01foo~2/-/uuu",
+	const char *pointer3[] = { "/%02zap", "/%03zap", "\\foo%25%5f/zip/pi", "/a~1b/%01foo~2/-/uuu",
 	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/zap/68.43" };
 
 	for(i = 0; i < 9; ++i)
 		jsonpp_create(root3, pointer3[i], json_null());
 
-	jsonp_passert(root3, "{\"\":{\"asd\":null},\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"foo~2\":[{\"uuu\":null},{\"2uuu\":null}]},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":{\"68.43\":null}}");
+	jsonp_passert(root3, "{\"\":{\"asd\":null},\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"foo~2\":[{\"uuu\":null},{\"2uuu\":null}]},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":0}");
 
 	const char *pointer4[] = { "/%01/-/a", "//-/b", "//foo" };
 
@@ -223,7 +225,7 @@ void jsonpp_stress_test()
 	jsonpp_create(root6, "/e/%053/5/d", NULL);
 	jsonpp_create(root6, "/e/%063/4/6/e", NULL);
 
-	jsonp_passert(root6, "{\"1\":{\"2\":{}},\"1man\":{\"maus\":{\"moo\":{}}},\"3\":{\"4\":{\"6\":{}},\"5\":{}},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":{}},{\"3\":{}}],\"3\":{\"4\":[{}],\"5\":[{}]}},\"e\":{\"1\":0,\"3\":false},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":\"\",\"up\":{\"musk\":\"\"},\"zap\":null}");
+	jsonp_passert(root6, "{\"1\":{\"2\":null},\"1man\":{\"maus\":{\"moo\":null}},\"3\":{\"4\":{\"6\":null},\"5\":null},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":null},{\"3\":null}],\"3\":{\"4\":[null],\"5\":[null]}},\"e\":{},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":{\"maus\":null},\"up\":{\"musk\":\"\"},\"zap\":true}");
 
 	selected = jsonpp_get(root6, "/h");
 	jsonpp_delete(selected, "/1");
@@ -231,7 +233,7 @@ void jsonpp_stress_test()
 	jsonp_passert(selected, "{\"3\":{\"4\":0.0,\"5\":false}}");
 
 	selected = jsonpp_get(root6, "/e/1");
-
+	
 	jsonp_passert(selected, "0");
 }
 

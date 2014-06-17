@@ -12,6 +12,7 @@
 #include "libjsonp_helper.h"
 #include "libjsonp_config.h"
 
+/*
 json_foreach_iteration jsonp_required_scan(const char *key, json_t *val, void *mem)
 {
 	json_t *retobj = ((json_t **)mem)[0];
@@ -32,6 +33,7 @@ json_foreach_iteration jsonp_required_scan(const char *key, json_t *val, void *m
 
 	return json_foreach_break;
 }
+*/
 
 json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *mem)
 {
@@ -61,7 +63,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 			if(exists)
 			{
 				retobj = json_get(retobj, "options");
-				json_set_new(retobj, json_string_value(*optnext), json_primitive(cc));
+				json_set_new(retobj, json_string_value(*optnext), json_ofvalue(cc));
 				json_decref(*optnext);
 				*optnext = NULL;
 			}
@@ -81,7 +83,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 				{
 					retobj = json_get(retobj, "unnamed");
 					retobj = json_get(retobj, "options");
-					json_set_new(retobj, json_string_value(*optnext), json_primitive(cc));
+					json_set_new(retobj, json_string_value(*optnext), json_ofvalue(cc));
 					json_decref(*optnext);
 					*optnext = NULL;
 				}
@@ -120,7 +122,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 						}
 						else
 						{
-							json_t *newO = json_primitive(c + i);
+							json_t *newO = json_ofvalue(c + i);
 							c[i] = '\0';
 							json_set_new(retobj, c, newO);
 						}
@@ -145,7 +147,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 			if(args != NULL)
 			{
 				retobj = json_get(retobj, "arguments");
-				json_set_new(retobj, json_string_value(args), json_primitive(cc));
+				json_set_new(retobj, json_string_value(args), json_ofvalue(cc));
 			}
 			else
 			{
@@ -167,7 +169,7 @@ json_t *jsonp_options(json_t *args, json_t *opts)
 	json_t *oargs = json_get(opts, "arguments");
 	json_t *oopts = json_invert(json_get(opts, "options"));
 	json_t *oswit = json_invert(json_get(opts, "switches"));
-	json_t *reqs = json_get(opts, "required");
+	/*json_t *reqs = json_get(opts, "required");*/
 	json_t *optnext = NULL;
 	int argidx = 0;
 	void *forargs[] = {obj, oargs, oopts, oswit, &optnext, &argidx};
@@ -188,6 +190,7 @@ json_t *jsonp_options(json_t *args, json_t *opts)
 		return NULL;
 	}
 
+	/*
 	if(reqs != NULL && json_foreach(reqs, jsonp_required_scan, forargs) == json_foreach_break)
 	{
 		json_decref(obj);
@@ -195,6 +198,7 @@ json_t *jsonp_options(json_t *args, json_t *opts)
 		json_decref(oswit);
 		return NULL;
 	}
+	*/
 
 	return obj;
 }

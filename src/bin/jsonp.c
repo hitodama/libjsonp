@@ -17,8 +17,7 @@ static const char *jsonp_main_options =
 	"{\
 		\"arguments\":[\"verb\", \"path\", \"value\"],\
 		\"options\":[\"i\", \"o\"],\
-		\"switches\":[\"pp\"],\
-		\"required\":[\"verb\", \"path\"]\
+		\"switches\":[\"pp\"]\
 	}";
 
 json_t *jsonp_prepare_options(int argc, char **argv)
@@ -63,12 +62,12 @@ int main(int argc, char **argv)
 
 	if(verb_ == NULL || !json_is_string(verb_))
 	{
-		fprintf(stderr, "Verb defined wrong!\n");
+		fprintf(stderr, "Verb undefined or wrong!\n");
 		return EXIT_FAILURE;
 	}
 	if(path_ == NULL || !json_is_string(path_))
 	{
-		fprintf(stderr, "Path defined wrong!\n");
+		fprintf(stderr, "Path undefined or wrong!\n");
 		return EXIT_FAILURE;
 	}
 
@@ -118,7 +117,7 @@ int main(int argc, char **argv)
 
 	if(pp)
 	{
-		if(strcmp(verb, "create") == 0 && value != NULL)
+		if(strcmp(verb, "create") == 0)// && value != NULL)
 			jsonpp_create(json, path, value);
 		else if(strcmp(verb, "get") == 0)
 			json = jsonpp_get(json, path);
@@ -134,7 +133,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		if(strcmp(verb, "create") == 0 && value != NULL)
+		if(strcmp(verb, "create") == 0)// && value != NULL)
 			jsonp_create(json, path, value);
 		else if(strcmp(verb, "get") == 0)
 			json = jsonp_get(json, path);
@@ -149,10 +148,13 @@ int main(int argc, char **argv)
 		}
 	}
 	
-	if(json == NULL || json_dumpf(json, outFile, JSON_ENCODE_ANY) != 0)
-	{
-		fprintf(stderr, "Could not write to output!\n");
-		return EXIT_FAILURE;
+	if(json != NULL)
+	{	
+		if(json_dumpf(json, outFile, JSON_ENCODE_ANY) != 0)
+		{
+			fprintf(stderr, "Could not write to output!\n");
+			return EXIT_FAILURE;
+		}
 	}
 
 	if(inFile != stdin)

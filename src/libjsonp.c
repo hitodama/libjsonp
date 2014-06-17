@@ -102,16 +102,18 @@ static json_t *jsonp_create_step(json_t *json, char *path, json_type *type)
 /*
 	Walk the json pointer.
 */
-static int jsonp_walk(json_t **ljson, char **lpath,
-	json_t *json, char *path, int hasvalue, char separator,
+static json_type jsonp_walk(json_t **ljson, char **lpath,
+	json_t *json, char *path, char separator,
 	jsonp_decoder decoder, jsonp_step step)
 {
 	size_t i;
 	size_t j;
 	json_type type = json_undefined;
+	*ljson = NULL;
+	*lpath = NULL;
 
 	if(json == NULL || path == NULL || step == NULL || !json_is_object(json))
-		return -1;
+		return type;
 
 	if(path[0] == separator)
 	{
@@ -123,10 +125,11 @@ static int jsonp_walk(json_t **ljson, char **lpath,
 				if(type != json_undefined && type != JSON_OBJECT && type != JSON_ARRAY)
 					break;
 				json = step(json, path + j, &type);
+				type = json_undefined;
 				if(json == NULL)
 					break;
 
-				type = json_undefined;
+				//type = json_undefined;
 				j = i + 1;
 			}
 	}
@@ -136,15 +139,11 @@ static int jsonp_walk(json_t **ljson, char **lpath,
 		j = 0;
 	}
 
+	if((json_is_array(json) || json_is_object(json)) && type != json_undefined)
+		return json_undefined;
+
 	if(json != NULL)
-	{
 		decoder(path + j, &type);
-		if(!hasvalue)
-		{
-			if(step(json, path + j, &type) == NULL)
-				return -1;
-		}
-	}
 
 	if(ljson != NULL && lpath != NULL)
 	{
@@ -154,7 +153,7 @@ static int jsonp_walk(json_t **ljson, char **lpath,
 			*lpath = NULL;
 	}
 
-	return 0;
+	return type;
 }
 
 /*
@@ -162,7 +161,6 @@ static int jsonp_walk(json_t **ljson, char **lpath,
 */
 static JSON_INLINE json_t *jsonp_get_(json_t *json, const char *path, jsonp_decoder decoder)
 {
-	int i = 0;
 	json_t *last; 
 	char *lastpath;
 
@@ -175,10 +173,9 @@ static JSON_INLINE json_t *jsonp_get_(json_t *json, const char *path, jsonp_deco
 		;
 	else
 	{
-		i = jsonp_walk(&last, &lastpath, json, path_, 0, JSONP_PATH_SEPERATOR, decoder, jsonp_simple_step);
-
+		jsonp_walk(&last, &lastpath, json, path_, JSONP_PATH_SEPERATOR, decoder, jsonp_simple_step);
 		json = NULL;
-		if(i >= 0)
+		if(last != NULL)
 			json = json_get(last, lastpath);
 	}
 
@@ -200,6 +197,7 @@ json_t *jsonpp_get(json_t *json, const char *path)
 static JSON_INLINE json_t *jsonp_set_(json_t *json, const char *path, json_t *value,
 	jsonp_decoder decoder, jsonp_step step, jsonp_setter setter)
 {
+	json_type type;
 	json_t *last; 
 	char *lastpath;
 	json_t *r = NULL;
@@ -219,13 +217,38 @@ static JSON_INLINE json_t *jsonp_set_(json_t *json, const char *path, json_t *va
 	}
 	else
 	{
-		if(jsonp_walk(&last, &lastpath, json, path_, value != NULL, JSONP_PATH_SEPERATOR, decoder, step) >= 0)
+		int rr = -1;
+
+		type = jsonp_walk(&last, &lastpath, json, path_, JSONP_PATH_SEPERATOR, decoder, step);
+
+		//printf("%s %s %i %zu\n", path, lastpath, type, value);
+
+		if(type != json_undefined)
 		{
-			if(value == NULL)
-				r = json_get(last, lastpath);
-			else if(setter(last, lastpath, value) >= 0)
-				r = value;
+			json_t *t = json_oftype(type);
+			if(value != NULL)
+			{
+				char *s = json_value_copy(value);
+				json_value_set(t, s);
+				free((void *)s);
+			}
+			rr = json_set_new(last, lastpath, t);
+			value = t;
 		}
+		else
+		{
+			if(value != NULL)
+			{
+				rr = setter(last, lastpath, value);
+			}
+			else
+			{
+				value = json_null();
+				rr = json_set_new(last, lastpath, value);
+			}
+		}
+		if(rr != -1)
+			r = value;
 	}
 
 	free(path_);
@@ -285,18 +308,18 @@ static JSON_INLINE int jsonp_delete_(json_t *json, const char *path, jsonp_decod
 {
 	json_t *last; 
 	char *lastpath;
-	int r;
+	int r = -1;
 
 	char *path_ = jsonp_strndup(path, JSONP_SIZE_MAX);
 
 	if(json == NULL || !json_is_object(json))
-		return -1;
+		return r;
 
 	if(path_ == NULL || strncmp(path_, "", 1) == 0)
 		return json_clear(json);
 
-	r = jsonp_walk(&last, &lastpath, json, path_, 0, JSONP_PATH_SEPERATOR, decoder, jsonp_simple_step);
-	if(r >= 0)
+	jsonp_walk(&last, &lastpath, json, path_, JSONP_PATH_SEPERATOR, decoder, jsonp_simple_step);
+	if(last != NULL)
 		r = json_remove(last, lastpath);
 
 	free(path_);
