@@ -105,8 +105,6 @@ int main(int argc, char **argv)
 		}
 	}
 
-printf("%i\n", json_typeof(value));
-
 	verb = json_string_value(verb_);
 	path = json_string_value(path_);
 

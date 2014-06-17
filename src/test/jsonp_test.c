@@ -120,9 +120,9 @@ void jsonpp_stress_test()
 	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/zap/68.43" };
 
 	for(i = 0; i < 13; ++i)
-		assert(jsonpp_create(root1, pointer1[i], json_null()) == 0);
-	assert(jsonpp_create(root1, pointer1[i++], json_null()) == -1);
-	assert(jsonpp_create(root1, pointer1[i++], json_null()) == 0);
+		jsonpp_create(root1, pointer1[i], json_null());
+	jsonpp_create(root1, pointer1[i++], json_null());
+	jsonpp_create(root1, pointer1[i++], json_null());
 
 	jsonp_passert(root1, "{\"\":[{\"a\":null}],\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}},{\"uuu\":null},{\"2uuu\":null}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":{\"68.43\":null}}");
 
@@ -130,7 +130,7 @@ void jsonpp_stress_test()
 	 "/a~1b/%01foo~2/-/-/joo", "/a~1b/foo~2/0/moo/goo/", "/%01/-/a", "/usr/local/bin/bash" };
 	
 	for(i = 0; i < 6; ++i)
-		assert(jsonpp_create(root2, pointer2[i], json_null()) == 0);
+		jsonpp_create(root2, pointer2[i], json_null());
 
 	jsonp_passert(root2, "{\"\":[{\"a\":null}],\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"usr\":{\"local\":{\"bin\":{\"bash\":null}}}}");
 
@@ -138,22 +138,22 @@ void jsonpp_stress_test()
 	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/zap/68.43" };
 
 	for(i = 0; i < 9; ++i)
-		assert(jsonpp_create(root3, pointer3[i], json_null()) == 0);
+		jsonpp_create(root3, pointer3[i], json_null());
 
 	jsonp_passert(root3, "{\"\":{\"asd\":null},\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"foo~2\":[{\"uuu\":null},{\"2uuu\":null}]},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":{\"68.43\":null}}");
 
 	const char *pointer4[] = { "/%01/-/a", "//-/b", "//foo" };
 
 	for(i = 0; i < 2; ++i)
-		assert(jsonpp_create(root4, pointer4[i], json_null()) == 0);
-	assert(jsonpp_create(root4, pointer4[i], json_null()) == -1);
+		jsonpp_create(root4, pointer4[i], json_null());
+	jsonpp_create(root4, pointer4[i], json_null());
 
 	jsonp_passert(root4, "{\"\":[{\"a\":null},{\"b\":null}]}");
 
 	const char *pointer5[] = { "//asd" , "/%01/-/a"};
 
 	for(i = 0; i < 2; ++i)
-		assert(jsonpp_create(root5, pointer5[i], json_null()) == 0);
+		jsonpp_create(root5, pointer5[i], json_null());
 
 	jsonp_passert(root5, "{\"\":[{\"a\":null}]}");
 
