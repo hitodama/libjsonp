@@ -1,0 +1,1 @@
+{"switches": ["pp"], "arguments": ["verb", "path", "value"], "required": ["verb", "path"], "options": ["i", "o"], "amd": {"a": "zop"}}
