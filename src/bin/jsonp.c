@@ -139,15 +139,18 @@ int main(int argc, char **argv)
 	if(t != NULL && json_is_string(t))
 	{
 		json_t *o = json_oftype(json_type_from_string(json_string_value(t)));
-		char *c = json_value_copy(value);
-		json_value_set(o, c);
-		free((void *)c);
+		if(value != NULL)
+		{
+			char *c = json_value_copy(value);
+			json_value_set(o, c);
+			free((void *)c);
+		}
 		value = o;
 	}
 
 	if(pp)
 	{
-		if(strcmp(verb, "create") == 0)// && value != NULL)
+		if(strcmp(verb, "create") == 0)
 			jsonpp_create(json, path, value);
 		else if(strcmp(verb, "get") == 0)
 			json = jsonpp_get(json, path);
@@ -163,7 +166,7 @@ int main(int argc, char **argv)
 	}
 	else
 	{
-		if(strcmp(verb, "create") == 0)// && value != NULL)
+		if(strcmp(verb, "create") == 0)
 			jsonp_create(json, path, value);
 		else if(strcmp(verb, "get") == 0)
 			json = jsonp_get(json, path);
@@ -180,7 +183,6 @@ int main(int argc, char **argv)
 	
 	if(json != NULL)
 	{
-		//fprintf(stderr, "%s\n", json_dumps(json, JSON_ENCODE_ANY));
 		if(json_dumpf(json, outFile, JSON_ENCODE_ANY) < 0)
 		{
 			fprintf(stderr, "Could not write to output!\n");

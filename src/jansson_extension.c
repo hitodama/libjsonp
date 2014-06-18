@@ -8,8 +8,7 @@
 
 #define JSON_FORMAT_STRING(x) "%" x
 
-const static char *json_type_strings[] = {"object", "array", "string",
-	"integer", "real", "true", "false", "null"};
+const static char *json_type_strings[] = {"object", "array", "string", "integer", "real", "true", "false", "null"};
 
 size_t json_ref(json_t *json)
 {
@@ -56,7 +55,6 @@ json_type json_typeofs(const char *str)
 
 	for(; str[i] != '\0'; ++i)
 	{
-
 		if(str[i] == '.')
 			++dots;
 		else if(str[i] < '0' || str[i] > '9')
@@ -84,6 +82,7 @@ json_type json_typeofs(const char *str)
 
 	if((str[0] == '{' && str[i - 1] == '}') || (str[0] == '[' && str[i - 1] == ']') )
 	{
+		/* use unpack to verify? */
 		json_t *r = json_loads(str, JSON_DECODE_ANY, NULL);
 		if(r != NULL)
 		{
@@ -309,6 +308,7 @@ char *json_value_copy(json_t *json)
 			break;
 		default:
 			r = json_dumps(json, 0);
+			break;
 	}
 
 	return r;

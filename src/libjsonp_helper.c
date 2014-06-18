@@ -72,7 +72,7 @@ size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, 
 	return hn - jsonp_memcnt(haystack, 0, hn);
 }
 
-int jsonp_strtozu(size_t *value, const char *s) /*, char **e, int base)*/
+int jsonp_strtozu(size_t *value, const char *s)
 {
 	int sign = 1;
 	if(value == NULL)

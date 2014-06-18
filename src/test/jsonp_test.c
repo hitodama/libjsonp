@@ -163,8 +163,8 @@ void jsonpp_stress_test()
 
 	jsonp_passert(root5, "{\"\":[{\"a\":null}]}");
 
-	// jsonpp_set(root6, "/zip1/zap/%01zue/-", json_false());
-	// jsonpp_set(root6, "/zap2", json_false());
+	jsonpp_set(root6, "/zip1/zap/%01zue/-", json_false());
+	jsonpp_set(root6, "/zap2", json_false());
 
 	jsonpp_create(root6, "/%05zap", json_null());
 	jsonpp_create(root6, "/man/maus", json_null());
@@ -229,7 +229,7 @@ void jsonpp_stress_test()
 	jsonpp_create(root6, "/e/%053/5/d", NULL);
 	jsonpp_create(root6, "/e/%063/4/6/e", NULL);
 
-	jsonp_passert(root6, "{\"1\":{\"2\":null},\"1man\":{\"maus\":{\"moo\":null}},\"3\":{\"4\":{\"6\":null},\"5\":null},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":null},{\"3\":null}],\"3\":{\"4\":[null],\"5\":[null]}},\"e\":{\"1\":0,\"3\":false},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":\"\",\"up\":{\"musk\":\"\"},\"zap\":true}");
+	jsonp_passert(root6, "{\"1\":{\"2\":null},\"1man\":{\"maus\":{\"moo\":null}},\"3\":{\"4\":{\"6\":null},\"5\":null},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":null},{\"3\":null}],\"3\":{\"4\":[null],\"5\":[null]}},\"e\":{\"1\":0,\"3\":false},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":\"\",\"up\":{\"musk\":\"\"},\"zap\":true,\"zap2\":false}");
 
 	selected = jsonpp_get(root6, "/h");
 	jsonpp_delete(selected, "/1");
