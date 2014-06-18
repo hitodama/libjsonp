@@ -7,10 +7,7 @@
 #include <jansson.h>
 
 #include "jansson_extension.h"
-#include "libjsonpp.h"
-
 #include "libjsonp_helper.h"
-#include "libjsonp_config.h"
 
 /*
 json_foreach_iteration jsonp_required_scan(const char *key, json_t *val, void *mem)

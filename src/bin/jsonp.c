@@ -17,7 +17,16 @@ static const char *jsonp_main_options =
 	"{\
 		\"arguments\":[\"verb\", \"path\", \"value\"],\
 		\"options\":[\"i\", \"o\"],\
-		\"switches\":[\"pp\"]\
+		\"switches\":[\"pp\", \"h\"],\
+		\"help\":{\
+			\"verb\": \" One of <create, get, set, delete>\",\
+			\"path\": \"The jsonp path\",\
+			\"[value]\": \"The value to be set or created\",\
+			\"[i]\": \"User input file instead of stdin\",\
+			\"[o]\": \"User output file instead of stdout\",\
+			\"[pp]\": \"Switch to percent pointers\",\
+			\"[h]\": \"Display this help and exit\"\
+		}\
 	}";
 
 json_t *jsonp_prepare_options(int argc, char **argv)
@@ -59,6 +68,16 @@ int main(int argc, char **argv)
 	json_t *in = jsonpp_get(args, "/options/i");
 	json_t *out = jsonpp_get(args, "/options/o");
 	json_t *pp = jsonpp_get(args, "/switches/pp");
+	json_t *h = jsonpp_get(args, "/switches/h");
+
+	if(h != NULL)
+	{
+		json_t *opt = json_loads(jsonp_main_options, 0, NULL);
+		json_dumpf(jsonpp_get(opt, "/help"), stdout, 
+			JSON_PRESERVE_ORDER |JSON_ENCODE_ANY | JSON_INDENT(4));
+		json_decref(opt);
+		return EXIT_SUCCESS;
+	}
 
 	if(verb_ == NULL || !json_is_string(verb_))
 	{
