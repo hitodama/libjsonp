@@ -16,7 +16,7 @@
 static const char *jsonp_main_options = 
 	"{\
 		\"arguments\":[\"verb\", \"path\", \"value\"],\
-		\"options\":[\"i\", \"o\"],\
+		\"options\":[\"i\", \"o\", \"t\"],\
 		\"switches\":[\"pp\", \"h\"],\
 		\"help\":{\
 			\"verb\": \" One of <create, get, set, delete>\",\
@@ -24,6 +24,7 @@ static const char *jsonp_main_options =
 			\"[value]\": \"The value to be set or created\",\
 			\"[i]\": \"User input file instead of stdin\",\
 			\"[o]\": \"User output file instead of stdout\",\
+			\"[t]\": \"Force the type of the value\",\
 			\"[pp]\": \"Switch to percent pointers\",\
 			\"[h]\": \"Display this help and exit\"\
 		}\
@@ -67,6 +68,7 @@ int main(int argc, char **argv)
 
 	json_t *in = jsonpp_get(args, "/options/i");
 	json_t *out = jsonpp_get(args, "/options/o");
+	json_t *t = jsonpp_get(args, "/options/t");
 	json_t *pp = jsonpp_get(args, "/switches/pp");
 	json_t *h = jsonpp_get(args, "/switches/h");
 
@@ -134,6 +136,15 @@ int main(int argc, char **argv)
 		 return EXIT_FAILURE;
 	}
 
+	if(t != NULL && json_is_string(t))
+	{
+		json_t *o = json_oftype(json_type_from_string(json_string_value(t)));
+		char *c = json_value_copy(value);
+		json_value_set(o, c);
+		free((void *)c);
+		value = o;
+	}
+
 	if(pp)
 	{
 		if(strcmp(verb, "create") == 0)// && value != NULL)
@@ -168,8 +179,9 @@ int main(int argc, char **argv)
 	}
 	
 	if(json != NULL)
-	{	
-		if(json_dumpf(json, outFile, JSON_ENCODE_ANY) != 0)
+	{
+		//fprintf(stderr, "%s\n", json_dumps(json, JSON_ENCODE_ANY));
+		if(json_dumpf(json, outFile, JSON_ENCODE_ANY) < 0)
 		{
 			fprintf(stderr, "Could not write to output!\n");
 			return EXIT_FAILURE;

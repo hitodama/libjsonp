@@ -280,13 +280,13 @@ char *json_value_copy(json_t *json)
 			{
 				const char *t = json_string_value(json);
 				if(t != NULL)
-					r = jsonp_strndup(t, JSONP_SIZE_MAX);
+					r = jsonp_strdup(t);
 			}
 			break;
 		case JSON_INTEGER:
 			{
 				json_int_t t = json_integer_value(json);
-				r = malloc(sizeof(char) * (jsonp_digits(sizeof(json_int_t)) + 1));
+				r = malloc(sizeof(char) * (jsonp_digits(sizeof(json_int_t)) + 2));
 				if(r != NULL)
 					sprintf(r, JSON_FORMAT_STRING(JSON_INTEGER_FORMAT), t);
 			}
@@ -294,7 +294,7 @@ char *json_value_copy(json_t *json)
 		case JSON_REAL:
 			{
 				double t = json_real_value(json);
-				r = malloc(sizeof(char) * (jsonp_digits(sizeof(double)) + 1));
+				r = malloc(sizeof(char) * (jsonp_digits(sizeof(double)) + 2));
 				if(r != NULL)
 					sprintf(r, "%lf", t);
 			}

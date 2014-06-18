@@ -124,6 +124,11 @@ char *jsonp_strndup(const char *s, size_t n)
 	return r;
 }
 
+char *jsonp_strdup(const char *s)
+{
+	return jsonp_strndup(s, JSONP_SIZE_MAX);
+}
+
 /*
 Returns 1 if s is an integer (of any size), 0 otherwise.
 The string is only checked for the first n characters.
