@@ -46,12 +46,15 @@ Returns a duplicate of the string s. If s is larger than n the string is cropped
 Since strndup is not a c99 function, this is a portable MIT implementation.
 */
 char *jsonp_strndup(const char *s, size_t n);
+
+/*
+Returns a duplicate of the string s.
+Since strndup is not a c99 function, this is a portable MIT implementation.
+*/
 char *jsonp_strdup(const char *s);
 
 /*
 Returns 1 if s is an integer (of any size), 0 otherwise.
-
-@see jsonp_isnint
 */
 int jsonp_isint(const char *s);
 

@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include "libjsonp.h"
 #include "jansson_extension.h"
@@ -50,12 +51,24 @@ static size_t jsonpp_url_decoder(char *str, size_t n)
 	for(i = 0; str[i] != '\0' && i < n; ++i)
 		if(str[i] == '%')
 		{
+			if(i > n - 1)
+				return 0;
+			
+			if(str[i + 1] == '%')
+			{
+				str[++i] = '\0';
+				continue;
+			}
+
 			if(i > n - 2)
-				return n;
+				return 0;
 
 			sscanf(str + i + 1, "%02x", &t);
 
-			str[i++] = (char)t;
+			str[i] = '\0';
+			if(isprint(t))
+				str[i] = (char)t;
+			i++;
 			str[i++] = '\0';
 			str[i] = '\0';
 		}
@@ -211,7 +224,7 @@ json_t *jsonpp_get(json_t *json, const char *path)
 	return jsonp_get_(json, path, jsonpp_decoder);
 }
 
-static JSON_INLINE json_t *jsonp_set_(json_t *json, const char *path, json_t *value,
+static JSON_INLINE json_t *jsonp_create_(json_t *json, const char *path, json_t *value,
 	jsonp_decoder_t decoder, jsonp_step_t step, jsonp_setter_t setter)
 {
 	json_t *last = NULL; 
@@ -273,52 +286,75 @@ static JSON_INLINE json_t *jsonp_set_(json_t *json, const char *path, json_t *va
 	return r;
 }
 
-int jsonp_set(json_t *json, const char *path, json_t *value)
-{
-	if(value == NULL)
-		return -1;
-	return (jsonp_set_(json, path, value, jsonp_decoder, jsonp_simple_step, json_set) == NULL ? -1 : 0);
-}
-
-int jsonpp_set(json_t *json, const char *path, json_t *value)
-{
-	if(value == NULL)
-		return -1;
-	return (jsonp_set_(json, path, value, jsonpp_decoder, jsonp_simple_step, json_set) == NULL ? -1 : 0);
-}
-
-int jsonp_set_new(json_t *json, const char *path, json_t *value)
-{
-	if(value == NULL)
-		return -1;
-	return (jsonp_set_(json, path, value, jsonp_decoder, jsonp_simple_step, json_set_new) == NULL ? -1 : 0);
-}
-
-int jsonpp_set_new(json_t *json, const char *path, json_t *value)
-{
-	if(value == NULL)
-		return -1;
-	return (jsonp_set_(json, path, value, jsonpp_decoder, jsonp_simple_step, json_set_new) == NULL ? -1 : 0);
-}
-
 json_t *jsonp_create(json_t *json, const char *path, json_t *value)
 {
-	return jsonp_set_(json, path, value, jsonp_decoder, jsonp_create_step, json_set);
+	return jsonp_create_(json, path, value, jsonp_decoder, jsonp_create_step, json_set);
 }
 
 json_t *jsonpp_create(json_t *json, const char *path, json_t *value)
 {
-	return jsonp_set_(json, path, value, jsonpp_decoder, jsonp_create_step, json_set);
+	return jsonp_create_(json, path, value, jsonpp_decoder, jsonp_create_step, json_set);
 }
 
 json_t *jsonp_create_new(json_t *json, const char *path, json_t *value)
 {
-	return jsonp_set_(json, path, value, jsonp_decoder, jsonp_create_step, json_set_new);
+	return jsonp_create_(json, path, value, jsonp_decoder, jsonp_create_step, json_set_new);
 }
 
 json_t *jsonpp_create_new(json_t *json, const char *path, json_t *value)
 {
-	return jsonp_set_(json, path, value, jsonpp_decoder, jsonp_create_step, json_set_new);
+	return jsonp_create_(json, path, value, jsonpp_decoder, jsonp_create_step, json_set_new);
+}
+
+/*
+static JSON_INLINE int jsonp_set_(json_t *json, const char *path, json_t *value,
+	jsonp_decoder_t decoder, jsonp_step_t step, jsonp_setter_t setter)
+{
+	json_t *last = NULL; 
+	char *lastpath = NULL;
+	int r = -1;
+
+	char *path_ = jsonp_strdup(path);
+	
+	if(json == NULL || value == NULL || decoder == NULL || step == NULL || setter == NULL || !json_is_object(json))
+		r = -1;
+	else if(path_ == NULL || strncmp(path_, "", 1) == 0)
+	{
+		json_clear(json);
+		r = json_merge(json, value);
+	}
+	else
+	{
+		jsonp_walk(&last, &lastpath, json, path_, JSONP_PATH_SEPERATOR, decoder, step);
+		
+		if(last != NULL)
+			r = setter(last, lastpath, value);
+	}
+
+	free(path_);
+
+	return r;
+}
+*/
+
+int jsonp_set(json_t *json, const char *path, json_t *value)
+{
+	return jsonp_create_(json, path, value, jsonp_decoder, jsonp_simple_step, json_set) == NULL ? -1 : 0 ;
+}
+
+int jsonpp_set(json_t *json, const char *path, json_t *value)
+{
+	return jsonp_create_(json, path, value, jsonpp_decoder, jsonp_simple_step, json_set) == NULL ? -1 : 0;
+}
+
+int jsonp_set_new(json_t *json, const char *path, json_t *value)
+{
+	return jsonp_create_(json, path, value, jsonp_decoder, jsonp_simple_step, json_set_new) == NULL ? -1 : 0;
+}
+
+int jsonpp_set_new(json_t *json, const char *path, json_t *value)
+{
+	return jsonp_create_(json, path, value, jsonpp_decoder, jsonp_simple_step, json_set_new) == NULL ? -1 : 0;
 }
 
 static JSON_INLINE int jsonp_delete_(json_t *json, const char *path, jsonp_decoder_t decoder)

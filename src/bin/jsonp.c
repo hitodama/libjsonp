@@ -41,7 +41,7 @@ json_t *jsonp_prepare_options(int argc, char **argv)
 
 	json_t *opt = json_loads(jsonp_main_options, 0, NULL);
 
-	r = jsonp_options(args, opt);
+	r = jsonp_options(args, opt, '-');
 
 	json_decref(args);
 	json_decref(opt);

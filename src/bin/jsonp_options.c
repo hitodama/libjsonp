@@ -40,18 +40,17 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 	json_t *swit = ((json_t **)mem)[3];
 	json_t **optnext = ((json_t ***)mem)[4];
 	int *argidx = ((int **)mem)[5];
+	char prefix = *((char **)mem)[6];
 	json_foreach_iteration r = json_foreach_continue;
 
 	if(json_is_string(val))
 	{
 		json_t *exists;
 		size_t i;
-		size_t l;
 
 		const char *cc = json_string_value(val);
 		if(cc == NULL)
 			return json_foreach_break;
-		l = strlen(cc);
 
 		if(*optnext != NULL)
 		{
@@ -66,29 +65,27 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 			}
 			else
 			{
-				if(cc[0] == '-')
+				retobj = json_get(retobj, "unnamed");
+				retobj = json_get(retobj, "switches");
+				if(cc[0] == prefix)
 				{
-					while(*cc == '-' && *cc != '\0')
+					while(*cc == prefix && *cc != '\0')
 						++cc;
-					retobj = json_get(retobj, "unnamed");
-					retobj = json_get(retobj, "switches");
 					json_set_new(retobj, json_string_value(*optnext), json_null());
-					json_decref(*optnext);
 					*optnext = json_string(cc);
 				}
 				else
 				{
-					retobj = json_get(retobj, "unnamed");
-					retobj = json_get(retobj, "options");
 					json_set_new(retobj, json_string_value(*optnext), json_ofvalue(cc));
-					json_decref(*optnext);
 					*optnext = NULL;
 				}
+				json_decref(*optnext);
 			}
 		}
-		else if(strncmp(cc, "-", 1) == 0)
+		else if(cc[0] == prefix)
 		{
-			for(i = 1; cc[i] == '-' && cc[i] != '\0' && i <= l; ++i)
+			size_t l = strlen(cc);
+			for(i = 1; cc[i] == prefix && cc[i] != '\0' && i <= l; ++i)
 				;
 			l -= i;
 
@@ -130,10 +127,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 				}
 
 				if(exists == NULL)
-				{
-					/*r = json_foreach_break;*/
 					*optnext = json_string(c);
-				}
 
 				free((void *)c);
 			}
@@ -159,7 +153,7 @@ json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *
 	return r;
 }
 
-json_t *jsonp_options(json_t *args, json_t *opts)
+json_t *jsonp_options(json_t *args, json_t *opts, char prefix)
 {
 	json_t *t = json_object();
 	json_t *obj = json_object();
@@ -169,7 +163,7 @@ json_t *jsonp_options(json_t *args, json_t *opts)
 	/*json_t *reqs = json_get(opts, "required");*/
 	json_t *optnext = NULL;
 	int argidx = 0;
-	void *forargs[] = {obj, oargs, oopts, oswit, &optnext, &argidx};
+	void *forargs[] = {obj, oargs, oopts, oswit, &optnext, &argidx, &prefix};
 	json_set_new(obj, "arguments", json_object());
 	json_set_new(obj, "options", json_object());
 	json_set_new(obj, "switches", json_object());

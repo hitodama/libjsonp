@@ -50,7 +50,10 @@ json_type json_typeofs(const char *str)
 	if(str == NULL)
 		return JSON_NULL;
 
-	if(*str != '\0' && (*str == '-' || *str == '+'))
+	if(*str == '\0')
+		return JSON_STRING;
+
+	if(*str == '-' || *str == '+')
 		i = 1;
 
 	for(; str[i] != '\0'; ++i)
@@ -415,7 +418,7 @@ json_foreach_iteration json_foreach(json_t *json, json_foreach_callback cb, void
 	}
 	else if(json_is_array(json))
 	{
-		key = malloc(sizeof(char) * (jsonp_digits(sizeof(JSONP_SIZE_MAX)) + 1)); /*pre define some const?*/
+		key = malloc(sizeof(char) * (jsonp_digits(sizeof(JSONP_SIZE_MAX)) + 2)); /*pre define some const?*/
 		json_array_foreach(json, index, value)
 		{
 			sprintf((char *)key, "%zu", index);
