@@ -28,11 +28,10 @@ static size_t jsonpp_tilde_decoder(char *str, size_t n)
 
 static json_type jsonp_decoder(char *str)
 {
-	size_t n = strlen(str);
-	jsonpp_tilde_decoder(str, n);
-	return json_undefined;
+	// size_t n = strlen(str);
+	// jsonpp_tilde_decoder(str, n);
+	// return json_undefined;
 
-	/*
 	json_type type = json_undefined;
 	size_t n = strlen(str);
 	size_t i, l;
@@ -43,7 +42,7 @@ static json_type jsonp_decoder(char *str)
 	for(i = 0; i <= json_type_last; ++i)
 	{
 		l = n;
-		c[1] = json_type_to_string(i)[0];
+		c[1] = json_ttos(i)[0];
 		n = jsonp_strnirep(str, n, c, 2, "", 0);
 		if(l != n)
 			type = i;
@@ -52,7 +51,6 @@ static json_type jsonp_decoder(char *str)
 	jsonpp_tilde_decoder(str, n);
 
 	return type;
-	*/
 }
 
 static size_t jsonpp_url_decoder(char *str, size_t n)

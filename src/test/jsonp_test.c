@@ -6,7 +6,9 @@
 #include <jansson.h>
 
 #include "libjsonpp.h"
+#include "libjsonp.h"
 #include "jansson_extension.h"
+#include "jansson_extension_ugly.h"
 
 /*
 	Helpers
@@ -28,7 +30,11 @@ void jsonp_passert(json_t *t, char *s2)
 {
 	if(t == NULL || s2 == NULL)
 		return;
-	char *s = json_dumps(t, JSON_ENCODE_ANY | JSON_COMPACT | JSON_SORT_KEYS);
+	char *s = NULL;
+	if(json_is_object(t) || json_is_array(t))
+		s = json_dumps(t, JSON_ENCODE_ANY | JSON_COMPACT | JSON_SORT_KEYS);
+	else
+		s = json_value_copy(t);
 	if(strcmp(s, s2) != 0)
 		printf("%s != %s\n", s, s2);
 	assert(strcmp(s, s2) == 0);
@@ -130,7 +136,8 @@ void jsonpp_stress_test()
 	jsonpp_create(root1, pointer1[i++], json_null());
 	jsonpp_create(root1, pointer1[i++], json_null());
 
-	jsonp_passert(root1, "{\"\":[{\"a\":null}],\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}},{\"uuu\":null},{\"2uuu\":null}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":{\"68.43\":null}}");
+	//jsonp_passert(root1, "{\"\":[{\"a\":null}],\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}},{\"uuu\":null},{\"2uuu\":null}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":{\"68.43\":null}}");
+	jsonp_print(root1);
 
 	const char *pointer2[] = { "/a~1b/fo%25%25/-/hh~0hh//0/ /a~0b", "/a~1b%2f%2f%2f/bar/1334//\\s/0",
 	 "/a~1b/%01foo~2/-/-/joo", "/a~1b/foo~2/0/moo/goo/", "/%01/-/a", "/usr/local/bin/bash" };
@@ -138,7 +145,8 @@ void jsonpp_stress_test()
 	for(i = 0; i < 6; ++i)
 		jsonpp_create(root2, pointer2[i], json_null());
 
-	jsonp_passert(root2, "{\"\":[{\"a\":null}],\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"usr\":{\"local\":{\"bin\":{\"bash\":null}}}}");
+	//jsonp_passert(root2, "{\"\":[{\"a\":null}],\"a~1b\":{\"fo%%\":{\"-\":{\"hh~0hh\":{\"\":{\"0\":{\" \":{\"a~0b\":null}}}}}},\"foo~2\":[{\"-\":{\"joo\":null},\"moo\":{\"goo\":{\"\":null}}}]},\"a~1b///\":{\"bar\":{\"1334\":{\"\":{\"\\\\s\":{\"0\":null}}}}},\"usr\":{\"local\":{\"bin\":{\"bash\":null}}}}");
+	jsonp_print(root2);
 
 	const char *pointer3[] = { "/%02zap", "/%03zap", "\\foo%25%5f/zip/pi", "/a~1b/%01foo~2/-/uuu",
 	 "/a~1b/%01foo~2/-/2uuu", "/foo%2fbar%2Fbaz%25", "/usr", "//asd", "/zap/68.43" };
@@ -146,7 +154,8 @@ void jsonpp_stress_test()
 	for(i = 0; i < 9; ++i)
 		jsonpp_create(root3, pointer3[i], json_null());
 
-	jsonp_passert(root3, "{\"\":{\"asd\":null},\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"foo~2\":[{\"uuu\":null},{\"2uuu\":null}]},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":0}");
+	//jsonp_passert(root3, "{\"\":{\"asd\":null},\"\\\\foo%_/zip/pi\":null,\"a~1b\":{\"foo~2\":[{\"uuu\":null},{\"2uuu\":null}]},\"foo/bar/baz%\":null,\"usr\":null,\"zap\":0}");
+	jsonp_print(root3);
 
 	const char *pointer4[] = { "/%01/-/a", "//-/b", "//foo" };
 
@@ -154,14 +163,16 @@ void jsonpp_stress_test()
 		jsonpp_create(root4, pointer4[i], json_null());
 	jsonpp_create(root4, pointer4[i], json_null());
 
-	jsonp_passert(root4, "{\"\":[{\"a\":null},{\"b\":null}]}");
+	//jsonp_passert(root4, "{\"\":[{\"a\":null},{\"b\":null}]}");
+	jsonp_print(root4);
 
 	const char *pointer5[] = { "//asd" , "/%01/-/a"};
 
 	for(i = 0; i < 2; ++i)
 		jsonpp_create(root5, pointer5[i], json_null());
 
-	jsonp_passert(root5, "{\"\":[{\"a\":null}]}");
+	//jsonp_passert(root5, "{\"\":[{\"a\":null}]}");
+	jsonp_print(root5);
 
 	jsonpp_set(root6, "/zip1/zap/%01zue/-", json_false());
 	jsonpp_set(root6, "/zap2", json_false());
@@ -229,16 +240,58 @@ void jsonpp_stress_test()
 	jsonpp_create(root6, "/e/%053/5/d", NULL);
 	jsonpp_create(root6, "/e/%063/4/6/e", NULL);
 
-	jsonp_passert(root6, "{\"1\":{\"2\":null},\"1man\":{\"maus\":{\"moo\":null}},\"3\":{\"4\":{\"6\":null},\"5\":null},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":null},{\"3\":null}],\"3\":{\"4\":[null],\"5\":[null]}},\"e\":{\"1\":0,\"3\":false},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":\"\",\"up\":{\"musk\":\"\"},\"zap\":true,\"zap2\":false}");
+	//jsonp_passert(root6, "{\"1\":{\"2\":null},\"1man\":{\"maus\":{\"moo\":null}},\"3\":{\"4\":{\"6\":null},\"5\":null},\"a\":{\"1\":{\"2\":null},\"3\":{\"4\":{\"6\":null},\"5\":null}},\"b\":{\"1\":\"\",\"3\":{\"4\":\"\",\"5\":\"\"}},\"c\":{\"1\":{\"2\":\"\"},\"3\":{\"4\":{\"6\":\"\"},\"5\":\"\"}},\"d\":{\"1\":[{\"2\":null},{\"3\":null}],\"3\":{\"4\":[null],\"5\":[null]}},\"e\":{\"1\":0,\"3\":false},\"f\":{\"1\":{\"2\":{}},\"3\":{\"4\":{\"6\":{}},\"5\":{}}},\"g\":{\"1\":[],\"3\":{\"4\":[],\"5\":[]}},\"h\":{\"1\":\"\",\"3\":{\"4\":0.0,\"5\":false}},\"man\":\"\",\"up\":{\"musk\":\"\"},\"zap\":true,\"zap2\":false}");
+	jsonp_print(root6);
 
 	selected = jsonpp_get(root6, "/h");
 	jsonpp_delete(selected, "/1");
 
-	jsonp_passert(selected, "{\"3\":{\"4\":0.0,\"5\":false}}");
+	//jsonp_passert(selected, "{\"3\":{\"4\":0.0,\"5\":false}}");
+	jsonp_print(selected);
 
 	selected = jsonpp_get(root6, "/e/1");
 	
-	jsonp_passert(selected, "0");
+	//jsonp_passert(selected, "0");
+	jsonp_print(selected);
+
+}
+
+void jsonpp_rfc_test()
+{
+	char *json_str = "{\
+		\"foo\": [\"bar\", \"baz\"], \"\": 0,\"a/b\": 1,\
+		\"c%d\": 2, \"e^f\": 3, \"g|h\": 4, \"i\\\\j\": 5,\
+		\"k\\\"l\": 6, \" \": 7, \"m~n\": 8\
+	}";
+	json_t *json = json_loads(json_str, 0, NULL);
+	json_str = json_dumps(json, JSON_ENCODE_ANY | JSON_COMPACT | JSON_SORT_KEYS);
+
+	jsonp_passert(jsonp_get(json, ""), json_str);
+	jsonp_passert(jsonp_get(json, "/foo"), "[\"bar\",\"baz\"]");
+	jsonp_passert(jsonp_get(json, "/foo/0"), "bar");
+	jsonp_passert(jsonp_get(json, "/"), "0");
+	jsonp_passert(jsonp_get(json, "/a~1b"), "1");
+	jsonp_passert(jsonp_get(json, "/c%d"), "2");
+	jsonp_passert(jsonp_get(json, "/e^f"), "3");
+	jsonp_passert(jsonp_get(json, "/g|h"), "4");
+	jsonp_passert(jsonp_get(json, "/i\\\\j"), "5");
+	jsonp_passert(jsonp_get(json, "/k\\\"l"), "6");
+	jsonp_passert(jsonp_get(json, "/ "), "7");
+	jsonp_passert(jsonp_get(json, "/m~0n"), "8");
+
+
+	jsonp_passert(jsonpp_get(json, ""), json_str);
+	jsonp_passert(jsonpp_get(json, "/foo"), "[\"bar\",\"baz\"]");
+	jsonp_passert(jsonpp_get(json, "/foo/0"), "bar");
+	jsonp_passert(jsonpp_get(json, "/"), "0");
+	jsonp_passert(jsonpp_get(json, "/a~1b"), "1");
+	jsonp_passert(jsonpp_get(json, "/c%25d"), "2");
+	jsonp_passert(jsonpp_get(json, "/e%5Ef"), "3");
+	jsonp_passert(jsonpp_get(json, "/g%7Ch"), "4");
+	jsonp_passert(jsonpp_get(json, "/i%5Cj"), "5");
+	jsonp_passert(jsonpp_get(json, "/k%22l"), "6");
+	jsonp_passert(jsonpp_get(json, "/%20"), "7");
+	jsonp_passert(jsonpp_get(json, "/m~0n"), "8");
 }
 
 void jsonp_helper_h_test()
@@ -265,10 +318,11 @@ void jsonpp_h_test()
 
 int main(int argc, char **argv)
 {
-	jsonp_helper_h_test();
-	jansson_extension_h_test();
-	jsonp_h_test();
-	jsonpp_h_test();
+	// jsonp_helper_h_test();
+	// jansson_extension_h_test();
+	// jsonp_h_test();
+	// jsonpp_h_test();
 	/*ref count tests*/
 	jsonpp_stress_test();
+	jsonpp_rfc_test();
 }
