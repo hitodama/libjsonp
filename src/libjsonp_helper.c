@@ -65,11 +65,19 @@ void jsonp_memmemmemi(void *m, size_t mn, const void *n, size_t nn, const void *
 	}
 }
 
-size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn)
+size_t jsonp_memnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn)
 {
 	jsonp_memmemmemi(haystack, hn, needle, nn, replace, rn);
 	jsonp_memsh(haystack, 0, hn);
 	return hn - jsonp_memcnt(haystack, 0, hn);
+}
+
+size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn)
+{
+	hn = jsonp_strnlen(haystack, hn);
+	nn = jsonp_strnlen(haystack, nn);
+	rn = jsonp_strnlen(haystack, rn);
+	return jsonp_memnirep(haystack, hn, needle, nn, replace, rn);
 }
 
 int jsonp_strtozu(size_t *value, const char *s)

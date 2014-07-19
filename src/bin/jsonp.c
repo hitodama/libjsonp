@@ -5,6 +5,7 @@
 #include <jansson.h>
 
 #include "jansson_extension.h"
+#include "jansson_extension_ugly.h"
 #include "libjsonpp.h"
 #include "libjsonp.h"
 
@@ -22,10 +23,10 @@ static const char *jsonp_main_options =
 			\"verb\": \" One of <create, get, set, delete>\",\
 			\"path\": \"The jsonp path\",\
 			\"[value]\": \"The value to be set or created\",\
-			\"[i]\": \"User input file instead of stdin\",\
-			\"[o]\": \"User output file instead of stdout\",\
-			\"[t]\": \"Force the type of the value\",\
-			\"[pp]\": \"Switch to percent pointers\",\
+			\"[i file]\": \"User input file instead of stdin\",\
+			\"[o file]\": \"User output file instead of stdout\",\
+			\"[t JSON-type]\": \"Force the type of the value\",\
+			\"[pp]\": \"Switch to percent (URL) pointers\",\
 			\"[h]\": \"Display this help and exit\"\
 		}\
 	}";
@@ -136,9 +137,10 @@ int main(int argc, char **argv)
 		 return EXIT_FAILURE;
 	}
 
+	/* UGLY */
 	if(t != NULL && json_is_string(t))
 	{
-		json_t *o = json_oftype(json_type_from_string(json_string_value(t)));
+		json_t *o = json_oftype(json_stot(json_string_value(t)));
 		if(value != NULL)
 		{
 			char *c = json_value_copy(value);
@@ -147,6 +149,7 @@ int main(int argc, char **argv)
 		}
 		value = o;
 	}
+	/* UGLY */
 
 	if(pp)
 	{

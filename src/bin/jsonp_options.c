@@ -7,6 +7,7 @@
 #include <jansson.h>
 
 #include "jansson_extension.h"
+#include "jansson_extension_ugly.h"
 #include "libjsonp_helper.h"
 
 /*

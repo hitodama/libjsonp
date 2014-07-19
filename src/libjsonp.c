@@ -5,6 +5,7 @@
 
 #include "libjsonp.h"
 #include "jansson_extension.h"
+//#include "jansson_extension_ugly.h"
 #include "libjsonp_helper.h"
 #include "libjsonp_config.h"
  
@@ -18,7 +19,6 @@ static const int json_error = 0x09;
 typedef json_t *(*jsonp_step_t)(json_t *, char *, json_type);
 typedef json_type (*jsonp_decoder_t)(char *);
 typedef int (*jsonp_setter_t)(json_t *, const char *, json_t *);
-
 
 static size_t jsonpp_tilde_decoder(char *str, size_t n)
 {
