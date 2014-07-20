@@ -16,7 +16,7 @@ int jsonp_set_new(json_t *json, const char *pointer, json_t *value);
 int jsonp_delete(json_t *json, const char *pointer);
 ----
 
-=== Tilde + URL encoding pointer functions:
+=== Tilde & URL encoding pointer functions:
 
 [source,c]
 ----
@@ -31,6 +31,7 @@ int jsonpp_delete(json_t *json, const char *pointer);
 === Type switching
 
 The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the $$~ escape character, there ~ and the first type letter (such as ~a for array, ~s for string, etc.) indicates the type$$. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios. Additionally, the URL functions support a URL based type setting via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for concrete values).
+
 For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
 
 == Bin
@@ -41,16 +42,10 @@ Besides the shared library the lib can also be build as a neat little binary. Se
 
 The example below shows multiple "create" scenarios. Since "get", "set" and "delete" are much simpler they are omitted. This example is also viable example for the library.
 
- Consider json to be an empty new opject.
- Create(json, "/foo%01/-/bar", "moo") or Create(json, "/foo~a/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo.
- $$"%01" or "~a"$$ here is the extension to allow to express "this is an array".
- On the same json object, create(json, "/foo%03" 3.141) or create(json, "/foo~i" 3.141) overrides "foo" with the integer 3.
- Create has a few other cases (default override of null for instance, null value (touch) support) that should work as most people would expect.
-
 [source,bash]
 ----
-echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 | jsonp create -pp "/1/%032" 42.2222  | jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
-{"moo": 3.0, "foo": 2.0, "1": {"2": 42}, "bar": {"baz": 3.141}}
+echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 | jsonp create -pp "/1/%03abc" 42.2222  | jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
+{"moo": 3.0, "foo": 2.0, "1": {"abc": 42}, "bar": {"baz": 3.141}}
 ----
 
 == Todo
