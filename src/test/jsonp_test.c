@@ -304,7 +304,7 @@ void jansson_extension_h_test()
 {
 	jansson_extension_h_merge_object_test();
 	jansson_extension_h_merge_array_test();
-	jansson_extension_h_merge_string_test();
+	//jansson_extension_h_merge_string_test();
 }
 
 void jansson_extension_ugly_h_test()

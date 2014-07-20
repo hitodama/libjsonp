@@ -2,7 +2,9 @@
 
 == API
 
-Provides a drop-in pointer extension to jansson. Also provides some extension functions to jansson to unify its object / array APIs.
+Provides a drop-in pointer extension to jansson. Also provides some extension functions to jansson to unify its object and array APIs.
+
+For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
 
 === Tilde pointer functions:
 
@@ -30,9 +32,7 @@ int jsonpp_delete(json_t *json, const char *pointer);
 
 === Type switching
 
-The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the $$~ escape character, there ~ and the first type letter (such as ~a for array, ~s for string, etc.) indicates the type$$. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios. Additionally, the URL functions support a URL based type setting via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for concrete values).
-
-For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
+The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the $$~ escape character. By using ~ and the first letter of the type (such as ~a for array, ~s for string, etc.) the type of a pointer part such as /foo~a can be expressed$$. Without such an extesion, JSON pointers are a little ill-equiped to support easy creation scenarios. Additionally, the URL functions support a URL based type setting via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for concrete values). If you would like to remove the extension, compile the code with JSONP_WITH_TYPESWITCH 0.
 
 == Bin
 
