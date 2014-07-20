@@ -10,14 +10,13 @@ These functions support tilde encoded pointers. The "create" functions also supp
 
 ==== Example
 
-==========================
-Consider json to be an empty new opject.
-Create(json, "/foo~a/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo.
-"~a" here is the extension to allow to express "this is an array".
-On the same json object, create(json, "/foo~i" 3.141) overrides "foo"
-with the integer 3.
-Create has a few other cases (default override of null for instance) that should work as most people would expect.
-==========================
+ Consider json to be an empty new opject.
+ Create(json, "/foo~a/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo.
+ "~a" here is the extension to allow to express "this is an array".
+ On the same json object, create(json, "/foo~i" 3.141) overrides "foo" with the integer 3.
+ Create has a few other cases (default override of null for instance) that should work as most people would expect.
+
+==== API
 
 [source,c]
 ----
@@ -36,14 +35,13 @@ These functions support tilde and URL encoded pointers. Like above, the "create"
 
 ==== Example
 
-==========================
-Consider json to be an empty new opject.
-create(json, "/foo%01/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo.
-"%01" here is the extension to allow to express "this is an array".
-On the same json object, create(json, "/foo%03" 3.141) overrides "foo"
-with the integer 3.
-Create has a few other cases (default override of null for instance, null value (touch) support) that should work as most people would expect.
-==========================
+ Consider json to be an empty new opject.
+ Create(json, "/foo%01/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo.
+ "%01" here is the extension to allow to express "this is an array".
+ On the same json object, create(json, "/foo%03" 3.141) overrides "foo" with the integer 3.
+ Create has a few other cases (default override of null for instance, null value (touch) support) that should work as most people would expect.
+
+==== API
 
 [source,c]
 ----
@@ -55,8 +53,6 @@ int jsonpp_set_new(json_t *json, const char *pointer, json_t *value);
 int jsonpp_delete(json_t *json, const char *pointer);
 ----
 
-
-
 For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
 
 === Bin
@@ -65,11 +61,11 @@ Besides the shared library the lib can also be build as a neat little binary. Se
 
 ==== Example
 
- echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 
- 	| jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
- 
- {"moo": 3.0, "foo": 2.0, "bar": {"baz": 3.141}}
-
+[source,bash]
+----
+echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 | jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
+{"moo": 3.0, "foo": 2.0, "bar": {"baz": 3.141}}
+----
 
 == Todo
 
