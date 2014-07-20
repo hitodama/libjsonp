@@ -6,9 +6,16 @@ Provides a drop-in pointer extension to jansson. Also provides some extension fu
 
 === The following pointer functions exist:
 
-These functions support tilde encoded pointers. The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the ~ escape character, there ~<first type letter> indicates the type. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios.
+These functions support tilde encoded pointers. The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the \~ escape character, there \~<\first type letter> indicates the type. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios.
 
- Example: Consider json an empty new opject. create(json, "/foo~a/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo. "~a" here is the extension to allow to express "this is an array". On the same json object, create(json, "/foo~i" 3.141); overrides "foo" with the integer 3. Create has a few other cases (default override of null for instance) that should work as most people would expect.
+ An Example: Consider json an empty new opject. 
+ create(json, "/foo~a/-/bar", "moo") creates an array foo
+ and adds a new object containing the attribute bar with the value moo.
+ "~a" here is the extension to allow to express "this is an array".
+ On the same json object, create(json, "/foo~i" 3.141) overrides "foo"
+ with the integer 3.
+ Create has a few other cases (default override of null for instance)
+ that should work as most people would expect.
 
  json_t *jsonp_create(json_t *json, const char *pointer, json_t *value);
  json_t *jsonp_create_new(json_t *json, const char *pointer, json_t *value);
@@ -21,7 +28,13 @@ These functions support tilde encoded pointers. The "create" functions also supp
 
 These functions support tilde and URL encoded pointers. Like above, the "create" functions also support an extension which allows type setting of pointer parts. Unlike above the type setting is also possible via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for more).
 
- Example: Consider json an empty new opject. create(json, "/foo%01/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo. "%01" here is the extension to allow to express "this is an array". On the same json object, create(json, "/foo%03" 3.141); overrides "foo" with the integer 3. Create has a few other cases (default override of null for instance, null value (touch) support) that should work as most people would expect.
+ An Example: Consider json an empty new opject.
+ create(json, "/foo%01/-/bar", "moo") creates an array foo
+ and adds a new object containing the attribute bar with the value moo. "%01" here is the extension to allow to express "this is an array".
+ On the same json object, create(json, "/foo%03" 3.141) overrides "foo"
+ with the integer 3.
+ Create has a few other cases (default override of null for instance,
+ null value (touch) support) that should work as most people would expect.
 
  json_t *jsonpp_create(json_t *json, const char *pointer, json_t *value);
  json_t *jsonpp_create_new(json_t *json, const char *pointer, json_t *value);
