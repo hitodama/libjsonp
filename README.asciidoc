@@ -20,7 +20,7 @@ int jsonp_delete(json_t *json, const char *pointer);
 
 ==== Create
 
-These functions support tilde encoded pointers. The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the \~ escape character, there \~\<first type letter\> (such as \~a for array, ~s for string, etc.) indicates the type. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios.
+These functions support tilde encoded pointers. The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the \~ escape character, there \~ + the first type letter (such as \~a for array, ~s for string, etc.) indicates the type. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios.
 
 ==== Example
 
