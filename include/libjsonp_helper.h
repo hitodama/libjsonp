@@ -18,10 +18,11 @@ void jsonp_memsh(void *mem, int c, size_t n);
 /*
 Replaces the string needle with the string replace in the string haystack. Rest are size parameters.
 
-@note Naive impl O(~4n), should be O(n)
+@note Naive impl O(~5n), should be O(n)
 @see jsonp_memmemmemi
 */
-size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn);
+size_t jsonp_strirep(char *haystack, const char *needle, const char *replace);
+//size_t jsonp_strnirep(char *haystack, size_t hn, const char *needle, size_t nn, const char *replace, size_t rn);
 
 
 /*

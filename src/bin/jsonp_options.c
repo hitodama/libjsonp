@@ -10,29 +10,6 @@
 #include "jansson_extension_ugly.h"
 #include "libjsonp_helper.h"
 
-/*
-json_foreach_iteration jsonp_required_scan(const char *key, json_t *val, void *mem)
-{
-	json_t *retobj = ((json_t **)mem)[0];
-	
-	if(json_is_string(val))
-	{
-		const char *v = json_string_value(val);
-		if(v == NULL)
-			return json_foreach_break;
-
-		if(json_get(json_get(retobj, "arguments"), v) != NULL)
-			return json_foreach_continue;
-		if(json_get(json_get(retobj, "options"), v) != NULL)
-			return json_foreach_continue;
-		if(json_get(json_get(retobj, "switches"), v) != NULL)
-			return json_foreach_continue;
-	}
-
-	return json_foreach_break;
-}
-*/
-
 json_foreach_iteration jsonp_arguments_scan(const char *key, json_t *val, void *mem)
 {
 	json_t *retobj = ((json_t **)mem)[0];
@@ -161,10 +138,10 @@ json_t *jsonp_options(json_t *args, json_t *opts, char prefix)
 	json_t *oargs = json_get(opts, "arguments");
 	json_t *oopts = json_invert(json_get(opts, "options"));
 	json_t *oswit = json_invert(json_get(opts, "switches"));
-	/*json_t *reqs = json_get(opts, "required");*/
 	json_t *optnext = NULL;
 	int argidx = 0;
 	void *forargs[] = {obj, oargs, oopts, oswit, &optnext, &argidx, &prefix};
+
 	json_set_new(obj, "arguments", json_object());
 	json_set_new(obj, "options", json_object());
 	json_set_new(obj, "switches", json_object());
@@ -181,16 +158,6 @@ json_t *jsonp_options(json_t *args, json_t *opts, char prefix)
 		json_decref(oswit);
 		return NULL;
 	}
-
-	/*
-	if(reqs != NULL && json_foreach(reqs, jsonp_required_scan, forargs) == json_foreach_break)
-	{
-		json_decref(obj);
-		json_decref(oopts);
-		json_decref(oswit);
-		return NULL;
-	}
-	*/
 
 	return obj;
 }

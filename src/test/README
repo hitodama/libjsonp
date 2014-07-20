@@ -1,4 +1,4 @@
-Create JSON-RPC like test file and tester
+Create JSON-RPC like test file and tester like so:
 
 {
 	"jsonrpc": "2.0", /* does not matter */
@@ -8,3 +8,5 @@ Create JSON-RPC like test file and tester
 	"result": {}, /* test cmp */
 	"error": {"code": -1, "message": "Could not merge"} /* test fail, to print */
 }
+
+Current tests are only very simple and not at all complete. Though the lib should work as intended (no guarantees of course).

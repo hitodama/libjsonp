@@ -1,19 +1,47 @@
-== libjsonp
+= libjsonp
 
-=== Todo
+== API
 
-.Finish documenting headers
-[NOTE]
-libjsonp.h, libjsonpp.h missing, (spellcheck ...)
+Provides a drop-in pointer extension to jansson. Also provides some extension functions to jansson to unify its object / array APIs.
 
-.Need Tests
-[NOTE]
-Need to write tests. Currently dummy bin.
+=== The following pointer functions exist:
 
-.Need README after done
-[NOTE]
-Replace me when done ...
+These functions support tilde encoded pointers. The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the ~ escape character, there ~<first type letter> indicates the type. Without the extesion JSON pointers are a little ill-equiped to support easy creation scenarios.
 
-.Better build system
-[WARNING]
-Need a better makefile, build system (help welcome)
+ Example: Consider json an empty new opject. create(json, "/foo~a/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo. "~a" here is the extension to allow to express "this is an array". On the same json object, create(json, "/foo~i" 3.141); overrides "foo" with the integer 3. Create has a few other cases (default override of null for instance) that should work as most people would expect.
+
+ json_t *jsonp_create(json_t *json, const char *pointer, json_t *value);
+ json_t *jsonp_create_new(json_t *json, const char *pointer, json_t *value);
+ json_t *jsonp_get(json_t *json, const char *pointer);
+ int jsonp_set(json_t *json, const char *pointer, json_t *value);
+ int jsonp_set_new(json_t *json, const char *pointer, json_t *value);
+ int jsonp_delete(json_t *json, const char *pointer);
+
+=== The following URL encoding pointer functions exist:
+
+These functions support tilde and URL encoded pointers. Like above, the "create" functions also support an extension which allows type setting of pointer parts. Unlike above the type setting is also possible via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for more).
+
+ Example: Consider json an empty new opject. create(json, "/foo%01/-/bar", "moo") creates an array foo and adds a new object containing the attribute bar with the value moo. "%01" here is the extension to allow to express "this is an array". On the same json object, create(json, "/foo%03" 3.141); overrides "foo" with the integer 3. Create has a few other cases (default override of null for instance, null value (touch) support) that should work as most people would expect.
+
+ json_t *jsonpp_create(json_t *json, const char *pointer, json_t *value);
+ json_t *jsonpp_create_new(json_t *json, const char *pointer, json_t *value);
+ json_t *jsonpp_get(json_t *json, const char *pointer);
+ int jsonpp_set(json_t *json, const char *pointer, json_t *value);
+ int jsonpp_set_new(json_t *json, const char *pointer, json_t *value);
+ int jsonpp_delete(json_t *json, const char *pointer);
+
+For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
+
+=== Bin
+
+Besides the shared library the lib can also be build as a neat little binary. See -h for more
+
+ Usage example: echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 | jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
+ {"moo": 3.0, "foo": 2.0, "bar": {"baz": 3.141}}
+
+
+== Todo
+
+* Need better tests (currently a simple dummy)
+* Need better build system / Makefile (help welcome)
+* Speed can be improved (mostly by more complex string handling)

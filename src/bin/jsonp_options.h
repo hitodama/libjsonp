@@ -13,7 +13,7 @@ Parses json arguments as native types.
 
 @param args JSON representation of argv as array.
 @param opts Options in the form of three string arrays (arguments, options, switches).
-@returns Returns an object consisting of an argument and option object.
+@returns Returns an object consisting of an arguments array and an options and switches object.
 */
 json_t *jsonp_options(json_t *args, json_t *opts, char prefix);
 

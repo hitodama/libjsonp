@@ -90,6 +90,7 @@ json_t *json_get(json_t *json, const char *key)
 		if(jsonp_strtozu(&i, key) < 0)
 			/* size_t s = json_array_size(json); return json_array_get(json, s - 1);*/
 			return NULL;
+		
 		return json_array_get(json, i);
 	}
 
