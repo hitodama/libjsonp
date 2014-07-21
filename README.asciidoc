@@ -62,7 +62,7 @@ echo "{\"foo\": [{\"bar\": 42.0}, 123]}" | jsonp delete "/foo/0" | jsonp create 
 echo "{\"foo\": 1}" | jsonp create "/foo/a/b" moo && printf "\n"
 {"foo": 1}
 
-echo "{\"foo\": 1}" | out/bin/jsonp create "/~ofoo/a/b" moo && printf "\n"
+echo "{\"foo\": 1}" | jsonp create "/~ofoo/a/b" moo && printf "\n"
 {"foo": {"a": {"b": "moo"}}}
 ----
 
