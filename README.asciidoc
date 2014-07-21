@@ -55,6 +55,9 @@ echo "{\"foo\": [{\"bar\": 42.0}, {\"abc\": \"def\"}, 123]}" | jsonp get "/foo" 
 
 echo "{\"foo\": [{\"bar\": 42.0}, {\"abc\": \"def\"}, 123]}" | jsonp get "/foo/2" && printf "\n"
 123
+
+echo "{\"foo\": [{\"bar\": 42.0}, 123]}" | jsonp delete "/foo/0" | jsonp create "/foo/-~f" | out/bin/jsonp get "foo" && printf "\n"
+[123, false]
 ----
 
 == Todo
