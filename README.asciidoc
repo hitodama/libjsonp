@@ -32,7 +32,7 @@ int jsonpp_delete(json_t *json, const char *pointer);
 
 === Type switching
 
-The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the $$~ escape character. By using ~ and the first letter of the type (such as ~a for array, ~s for string, etc.) the type of a pointer part such as /foo~a can be expressed$$. Without such an extesion, JSON pointers are a little ill-equiped to support easy creation scenarios. Additionally, the URL functions support a URL based type setting via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for concrete values). If you would like to remove the extension, compile the code with JSONP_WITH_TYPESWITCH 0.
+The "create" functions also support an extension which allows type setting of pointer parts. The extension is based on the $$~ escape character. By using ~ and the first letter of the type (such as ~a for array, ~s for string, etc.) the type of a pointer part such as /foo~a can be expressed$$. Without such an extesion, JSON pointers are a little ill-equiped to support easy creation scenarios. Additionally, the URL functions support a URL based type setting via the non-printable URL encoding parts %00 - %07 (see janssons type enum or jansson_extension.c for concrete values). Please take note that "create" generally does not override without being forced to, unless the previous value was null. If you would like to remove the extension, compile the code with JSONP_WITH_TYPESWITCH 0.
 
 == Bin
 
@@ -40,7 +40,7 @@ Besides the shared library the lib can also be build as a neat little binary. Se
 
 == Example
 
-The examples below shows multiple "create" scenarios. Additionally they show "get", "set" and "delete" scenarios. These examples are also viable examples for the library.
+The examples below shows multiple "create" scenarios. Additionally they show "get", "set" and "delete" scenarios. These examples are also viable examples for the library. Please take note that "create" generally does not override without being forced to, unless the previous value was null (see last two examples).
 
 [source,bash]
 ----
@@ -71,3 +71,4 @@ echo "{\"foo\": 1}" | out/bin/jsonp create "/~ofoo/a/b" moo && printf "\n"
 * Need better tests (currently a simple dummy)
 * Need better build system / Makefile (help welcome)
 * Speed can be improved (mostly by more complex string handling)
+* The core code is sort of ugly because of the type-switching / create (not found a nice abstraction yet)
