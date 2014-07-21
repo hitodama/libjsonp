@@ -23,7 +23,7 @@ typedef int (*jsonp_setter_t)(json_t *, const char *, json_t *);
 
 /* The create / type switching extension makes this whole code a bit ugly ... :( */
 
-static int jsonpp_tilde_decoder(char *str)
+static int jsonp_tilde_decoder(char *str)
 {
 	int i, f = 0;
 	for(i = 0; str[i] != '\0'; ++i)
@@ -66,7 +66,7 @@ static int jsonp_decoder(char *str)
 		}
 	}
 
-	if(jsonpp_tilde_decoder(str) == -1)
+	if(jsonp_tilde_decoder(str) == -1)
 		return -1;
 
 	return type;
