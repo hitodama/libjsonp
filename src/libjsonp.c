@@ -158,8 +158,7 @@ static json_t *jsonp_create_step(json_t *json, char *path, json_type type)
 {
 	json_t *r = NULL;
 
-	if(path != NULL)
-		r = json_get(json, path);
+	r = json_get(json, path);
 
 	if(type == json_undefined)
 	{
@@ -191,7 +190,7 @@ static int jsonp_walk(json_t **outjson, char **outpath, json_t *json,
 	size_t j;
 
 	if(json == NULL || path == NULL || step == NULL || !json_is_object(json))
-		return type;
+		return -1;
 
 	if(path[0] == separator)
 	{
@@ -266,7 +265,7 @@ static JSON_INLINE json_t *jsonp_create_(json_t *json, const char *path, json_t 
 		{
 			if(value != NULL)
 			{
-				if(type != json_undefined)
+				if(type < json_type_last)
 				{
 					json_t *o = json_get(last, lastpath);
 					if(o == NULL || type != json_typeof(o))
