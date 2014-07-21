@@ -80,15 +80,19 @@ size_t jsonp_strirep(char *haystack, const char *needle, const char *replace)
 int jsonp_strtozu(size_t *value, const char *s)
 {
 	int sign = 1;
-	if(value == NULL)
+
+	if(s == NULL)
 		return 0;
+
 	if(strncmp(s, "-", 1) == 0)
 	{
 		s++;
 		sign = -1;
 	}
 	/**value = (size_t)strtoull(s, e, base); not c89*/
-	sscanf(s, "%zu", value);
+	if(value != NULL)
+		sscanf(s, "%zu", value);
+	
 	return sign;
 }
 

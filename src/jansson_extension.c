@@ -87,7 +87,7 @@ json_t *json_get(json_t *json, const char *key)
 	else if(json_is_array(json) && jsonp_isint(key))
 	{
 		size_t i = 0;
-		if(jsonp_strtozu(&i, key) < 0)
+		if(jsonp_strtozu(&i, key) <= 0)
 			/* size_t s = json_array_size(json); return json_array_get(json, s - 1);*/
 			return NULL;
 		
@@ -176,8 +176,9 @@ int json_remove(json_t *json, const char *key)
 	else if(json_is_array(json) && jsonp_isint(key))
 	{
 		size_t i = 0;
-		if(jsonp_strtozu(&i, key) < 0)
-			return json_array_remove(json, i);
+		if(jsonp_strtozu(&i, key) <= 0)
+			return -1;
+		return json_array_remove(json, i);
 	}
 
 	return -1;

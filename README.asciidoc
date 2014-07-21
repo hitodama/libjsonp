@@ -40,12 +40,21 @@ Besides the shared library the lib can also be build as a neat little binary. Se
 
 == Example
 
-The example below shows multiple "create" scenarios. Since "get", "set" and "delete" are much simpler they are omitted. This example is also viable example for the library.
+The examples below shows multiple "create" scenarios. Additionally they show "get", "set" and "delete" scenarios. This examples are also viable examples for the library.
 
 [source,bash]
 ----
 echo "{}" | jsonp set -t real "foo" 2 | jsonp create "moo~r" 3 | jsonp create -pp "/1/%03abc" 42.2222  | jsonp create "/bar/baz" 3.141 | jsonp get "" && printf "\n"
 {"moo": 3.0, "foo": 2.0, "1": {"abc": 42}, "bar": {"baz": 3.141}}
+
+echo "{}" | jsonp create -pp "/foo~a/-/bar%04" "42" | jsonp create "/foo/-/abc" def | jsonp create "/foo/-" 123 && printf "\n"
+{"foo": [{"bar": 42.0}, {"abc": "def"}, 123]}
+
+echo "{\"foo\": [{\"bar\": 42.0}, {\"abc\": \"def\"}, 123]}" | jsonp get "/foo" && printf "\n"
+[{"bar": 42.0}, {"abc": "def"}, 123]
+
+echo "{\"foo\": [{\"bar\": 42.0}, {\"abc\": \"def\"}, 123]}" | jsonp get "/foo/2" && printf "\n"
+123
 ----
 
 == Todo
