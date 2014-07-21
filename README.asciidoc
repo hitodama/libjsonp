@@ -40,7 +40,7 @@ Besides the shared library the lib can also be build as a neat little binary. Se
 
 == Example
 
-The examples below shows multiple "create" scenarios. Additionally they show "get", "set" and "delete" scenarios. This examples are also viable examples for the library.
+The examples below shows multiple "create" scenarios. Additionally they show "get", "set" and "delete" scenarios. These examples are also viable examples for the library.
 
 [source,bash]
 ----
