@@ -2,9 +2,9 @@
 
 == API
 
-Provides a drop-in pointer extension to jansson. Also provides some extension functions to jansson to unify its object and array APIs.
+Provides a drop-in json pointer (jsonp) extension to jansson. Also provides some extension functions to jansson to unify its object and array APIs.
 
-For pointers themself and examples see: http://tools.ietf.org/html/rfc6901
+For pointers themself and examples see rfc6901(http://tools.ietf.org/html/rfc6901)
 
 === Tilde pointer functions:
 
